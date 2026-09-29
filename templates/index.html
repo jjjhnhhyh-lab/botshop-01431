@@ -1,0 +1,11 @@
+{% extends "base.html" %}{% block body %}<h3>商品列表</h3>
+{% if not items %}<p>目前沒有商品。</p>{% endif %}<div class="grid">
+{% for it in items %}<div class="card"><h5>{{ it.name }}</h5>
+<p style="opacity:.7">{{ it.description or '' }}</p>
+<p>價格：<b>{{ cur }}{{ it.price }}</b> · 庫存：{{ it.stock }}</p>
+<form method="post" action="/buy/{{ it.id }}">
+<input name="username" placeholder="你的名字" required>
+<input name="qty" type="number" min="1" value="1">
+<button {% if it.stock<=0 %}disabled{% endif %}>
+{% if it.stock<=0 %}售完{% else %}下單{% endif %}</button></form></div>
+{% endfor %}</div>{% endblock %}

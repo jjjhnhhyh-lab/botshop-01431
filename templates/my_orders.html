@@ -1,0 +1,7 @@
+{% extends "base.html" %}{% block body %}<h3>我的訂單</h3>
+<form><input name="username" placeholder="輸入下單時的名字" value="{{ name }}">
+<button>查詢</button></form>
+{% if rows %}<table><thead><tr><th>#</th><th>商品</th><th>數量</th><th>金額</th><th>狀態</th></tr></thead>
+<tbody>{% for r in rows %}<tr><td>{{ r.id }}</td><td>{{ r.name }}</td><td>{{ r.qty }}</td>
+<td>{{ cur }}{{ r.total }}</td><td>{{ r.status }}</td></tr>{% endfor %}</tbody></table>
+{% elif name %}<p>查無訂單。</p>{% endif %}{% endblock %}

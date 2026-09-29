@@ -1,0 +1,49 @@
+{% extends "base.html" %}{% block body %}
+<h3>🤖 機器人控制</h3><div class="card">
+狀態：<span id="state" class="idle">載入中…</span>
+<div id="stats" style="opacity:.7;font-size:.85em"></div>
+<p><button onclick="ctrl('start')">啟動</button>
+<button onclick="ctrl('restart')">重啟</button>
+<button onclick="ctrl('stop')">停止</button>
+<button onclick="ctrl('kill')">強制終止</button></p></div>
+
+<h3>📦 商品管理</h3><div class="card">
+<form method="post" action="/admin/item" class="grid">
+<input name="name" placeholder="商品名" required>
+<input name="price" type="number" placeholder="價格" required>
+<input name="stock" type="number" placeholder="庫存" required>
+<input name="description" placeholder="描述">
+<button>儲存</button></form></div>
+
+<table><thead><tr><th>ID</th><th>名稱</th><th>價格</th><th>庫存</th><th></th></tr></thead>
+<tbody>{% for it in items %}<tr><td>{{ it.id }}</td><td>{{ it.name }}</td>
+<td>{{ cur }}{{ it.price }}</td><td>{{ it.stock }}</td>
+<td><form method="post" action="/admin/item/{{ it.id }}/delete" style="display:inline">
+<button class="secondary outline">刪除</button></form></td></tr>{% endfor %}</tbody></table>
+
+<h3>📋 訂單</h3>
+<table><thead><tr><th>#</th><th>來源</th><th>客戶</th><th>商品</th><th>數量</th>
+<th>金額</th><th>狀態</th><th>操作</th></tr></thead>
+<tbody>{% for o in orders %}<tr><td>{{ o.id }}</td><td>{{ o.source }}</td>
+<td>{{ o.username or '-' }}</td><td>{{ o.name }}</td><td>{{ o.qty }}</td>
+<td>{{ cur }}{{ o.total }}</td><td>{{ o.status }}</td>
+<td>{% for s in ['paid','done','cancelled'] %}
+<form method="post" action="/admin/order/{{ o.id }}/status/{{ s }}" style="display:inline">
+<button class="secondary outline">{{ s }}</button></form>{% endfor %}</td></tr>{% endfor %}</tbody></table>
+
+<script>
+async function refresh(){
+  const d = await (await fetch('/admin/api/status')).json();
+  const e = document.getElementById('state');
+  e.textContent = d.state || '?';
+  e.className = d.state==='running'?'ok':d.state==='offline'?'bad':'idle';
+  if(d.cpu!==undefined) document.getElementById('stats').textContent =
+    `CPU ${d.cpu}% · RAM ${d.ram}MB · Disk ${d.disk}MB · Uptime ${d.uptime}s`;
+}
+async function ctrl(s){
+  const d = await (await fetch('/admin/server/'+s,{method:'POST'})).json();
+  if(!d.ok) alert('失敗：'+JSON.stringify(d));
+  setTimeout(refresh,1500);
+}
+refresh(); setInterval(refresh,8000);
+</script>{% endblock %}
