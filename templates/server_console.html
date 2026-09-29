@@ -25,18 +25,43 @@ body {
     transition: color 0.2s;
 }
 .back:hover { color: white; }
-.console-wrap {
-    max-width: 1000px;
-    margin: 40px auto;
-    padding: 0 24px;
+.wrap { max-width: 1000px; margin: 40px auto; padding: 0 24px; }
+
+.tabs {
+    display: flex;
+    gap: 4px;
+    border-bottom: 1px solid #22252e;
+    margin-bottom: 24px;
 }
+.tab {
+    padding: 12px 20px;
+    background: transparent;
+    color: #8890a8;
+    border: none;
+    border-bottom: 2px solid transparent;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: inherit;
+}
+.tab:hover { color: white; }
+.tab.active {
+    color: white;
+    border-bottom-color: #5865F2;
+}
+
+.panel { display: none; }
+.panel.active { display: block; }
+
+/* 控制台 */
 .server-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
     margin-bottom: 24px;
 }
-.server-header h1 { margin: 0; font-size: 1.8rem; color: white; }
+.server-header h1 { margin: 0; font-size: 1.8rem; }
 .status {
     display: inline-flex;
     align-items: center;
@@ -62,6 +87,7 @@ body {
     cursor: pointer;
     transition: all 0.2s;
     color: white;
+    font-family: inherit;
 }
 .btn-start { background: #2ecc71; }
 .btn-start:hover { background: #27ae60; }
@@ -92,6 +118,103 @@ body {
     animation: blink 1s step-end infinite;
 }
 @keyframes blink { 50% { opacity: 0; } }
+
+/* AI 助手 */
+.ai-box {
+    background: #181b22;
+    border: 1px solid #262a33;
+    border-radius: 12px;
+    padding: 40px;
+    text-align: center;
+}
+.ai-box .icon { font-size: 4rem; margin-bottom: 16px; }
+.ai-box h3 { margin: 0 0 8px; }
+.ai-box p { color: #8890a8; margin: 0; }
+
+/* 放資料夾 */
+.files-toolbar {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+.btn-newfolder {
+    background: #5865F2;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: inherit;
+}
+.btn-newfolder:hover { background: #4752c4; }
+.btn-upload {
+    background: #2ecc71;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: inherit;
+}
+.btn-upload:hover { background: #27ae60; }
+
+.files-header {
+    display: grid;
+    grid-template-columns: 1fr 120px 80px;
+    padding: 12px 16px;
+    border-bottom: 1px solid #22252e;
+    font-size: 0.8rem;
+    color: #666;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+.file-row {
+    display: grid;
+    grid-template-columns: 1fr 120px 80px;
+    padding: 14px 16px;
+    border-bottom: 1px solid #1a1d26;
+    align-items: center;
+    transition: background 0.15s;
+}
+.file-row:hover { background: #16181f; }
+.file-row .name {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: white;
+}
+.file-row .size { color: #8890a8; font-size: 0.9rem; }
+.file-row .actions button {
+    background: transparent;
+    color: #666;
+    border: none;
+    cursor: pointer;
+    font-size: 1.1rem;
+    padding: 4px 8px;
+    border-radius: 6px;
+    transition: all 0.15s;
+}
+.file-row .actions button:hover { color: #e74c3c; background: #2a1f22; }
+
+.empty-files {
+    text-align: center;
+    padding: 60px 20px;
+    color: #666;
+}
+.empty-files .icon { font-size: 3rem; margin-bottom: 12px; opacity: 0.4; }
+
+.total {
+    text-align: right;
+    padding: 16px;
+    font-size: 0.85rem;
+    color: #8890a8;
+}
 </style>
 </head>
 <body>
@@ -100,29 +223,69 @@ body {
     <a href="/dashboard" class="back">← 返回</a>
 </div>
 
-<div class="console-wrap">
-    <div class="server-header">
-        <h1>{{ server_name }}</h1>
-        <div class="status">
-            <span class="dot"></span>
-            線上
+<div class="wrap">
+    <div class="tabs">
+        <button class="tab active" onclick="showTab('console', this)">控制台</button>
+        <button class="tab" onclick="showTab('ai', this)">AI 助手</button>
+        <button class="tab" onclick="showTab('files', this)">放資料夾</button>
+    </div>
+
+    <!-- 控制台 -->
+    <div id="panel-console" class="panel active">
+        <div class="server-header">
+            <h1>{{ server_name }}</h1>
+            <div class="status"><span class="dot"></span>線上</div>
+        </div>
+        <div class="controls">
+            <button class="btn btn-start" onclick="logLine('> 啟動伺服器...', 'info')">▶ 啟動</button>
+            <button class="btn btn-stop" onclick="logLine('> 停止伺服器...', 'warn')">■ 停止</button>
+            <button class="btn btn-restart" onclick="logLine('> 重啟伺服器...', 'info')">↻ 重啟</button>
+        </div>
+        <div class="console-box" id="console">
+            <div class="line info">[Console] 已連線到伺服器：{{ server_name }}</div>
+            <div class="line ok">[Server] 伺服器正在運行中...</div>
+            <div class="line"><span style="color:#2ecc71">botshop@botshop</span>:<span style="color:#7d86ff">~</span>$ <span class="cursor"></span></div>
         </div>
     </div>
 
-    <div class="controls">
-        <button class="btn btn-start" onclick="logLine('> 啟動伺服器...', 'info')">▶ 啟動</button>
-        <button class="btn btn-stop" onclick="logLine('> 停止伺服器...', 'warn')">■ 停止</button>
-        <button class="btn btn-restart" onclick="logLine('> 重啟伺服器...', 'info')">↻ 重啟</button>
+    <!-- AI 助手 -->
+    <div id="panel-ai" class="panel">
+        <div class="ai-box">
+            <div class="icon">🤖</div>
+            <h3>AI 助手</h3>
+            <p>功能開發中</p>
+        </div>
     </div>
 
-    <div class="console-box" id="console">
-        <div class="line info">[Console] 已連線到伺服器：{{ server_name }}</div>
-        <div class="line ok">[Server] 伺服器正在運行中...</div>
-        <div class="line"><span style="color:#2ecc71">botshop@botshop</span>:<span style="color:#7d86ff">~</span>$ <span class="cursor"></span></div>
+    <!-- 放資料夾 -->
+    <div id="panel-files" class="panel">
+        <div class="files-toolbar">
+            <button class="btn-newfolder" onclick="newFolder()">📁 新增資料夾</button>
+            <button class="btn-upload" onclick="document.getElementById('fileInput').click()">📤 上傳檔案</button>
+            <input type="file" id="fileInput" style="display:none" onchange="handleUpload(event)">
+        </div>
+        <div class="files-header">
+            <div>名稱</div>
+            <div>大小</div>
+            <div></div>
+        </div>
+        <div id="fileList"></div>
+        <div class="total" id="totalSize"></div>
     </div>
 </div>
 
 <script>
+const SERVER_NAME = {{ server_name|tojson }};
+const STORAGE_KEY = 'botshop_files_' + SERVER_NAME;
+
+function showTab(id, el) {
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.getElementById('panel-' + id).classList.add('active');
+    el.classList.add('active');
+    if (id === 'files') renderFiles();
+}
+
 function logLine(text, cls = '') {
     const box = document.getElementById('console');
     const div = document.createElement('div');
@@ -131,6 +294,74 @@ function logLine(text, cls = '') {
     div.textContent = '[' + now + '] ' + text;
     box.appendChild(div);
     box.scrollTop = box.scrollHeight;
+}
+
+// ── 檔案管理 ──
+function getFiles() {
+    try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); }
+    catch(e) { return []; }
+}
+function saveFiles(arr) {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(arr));
+}
+
+function fmtSize(bytes) {
+    if (bytes < 1024) return bytes + ' B';
+    if (bytes < 1024*1024) return (bytes/1024).toFixed(1) + ' KB';
+    if (bytes < 1024*1024*1024) return (bytes/1024/1024).toFixed(1) + ' MB';
+    return (bytes/1024/1024/1024).toFixed(2) + ' GB';
+}
+
+function renderFiles() {
+    const list = document.getElementById('fileList');
+    const total = document.getElementById('totalSize');
+    const files = getFiles();
+    if (files.length === 0) {
+        list.innerHTML = '<div class="empty-files"><div class="icon">📂</div><p>還沒有任何檔案</p><p style="font-size:.85em;opacity:.7">點「上傳檔案」開始</p></div>';
+        total.textContent = '';
+        return;
+    }
+    list.innerHTML = files.map((f, i) => `
+        <div class="file-row">
+            <div class="name">
+                <span>${f.type === 'folder' ? '📁' : '📄'}</span>
+                <span>${f.name}</span>
+            </div>
+            <div class="size">${f.type === 'folder' ? '—' : fmtSize(f.size)}</div>
+            <div class="actions">
+                <button onclick="deleteFile(${i})" title="刪除">✕</button>
+            </div>
+        </div>
+    `).join('');
+    const sum = files.reduce((s, f) => s + (f.size || 0), 0);
+    total.textContent = '共 ' + files.length + ' 個項目 · ' + fmtSize(sum);
+}
+
+function newFolder() {
+    const name = prompt('資料夾名稱：');
+    if (!name || !name.trim()) return;
+    const files = getFiles();
+    files.push({ type: 'folder', name: name.trim(), size: 0 });
+    saveFiles(files);
+    renderFiles();
+}
+
+function handleUpload(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    const files = getFiles();
+    files.push({ type: 'file', name: file.name, size: file.size });
+    saveFiles(files);
+    renderFiles();
+    e.target.value = '';
+}
+
+function deleteFile(i) {
+    if (!confirm('確定刪除？')) return;
+    const files = getFiles();
+    files.splice(i, 1);
+    saveFiles(files);
+    renderFiles();
 }
 </script>
 
