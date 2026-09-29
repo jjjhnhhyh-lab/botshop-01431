@@ -84,7 +84,6 @@ body { margin: 0; }
 
 .section h2 { margin: 0 0 1.5rem; font-size: 1.5rem; }
 
-/* 建立伺服器表單 */
 .field { margin-bottom: 20px; }
 .field label { display: block; font-size: 0.9rem; color: #8890a8; margin-bottom: 8px; }
 .field input[type="text"] {
@@ -97,13 +96,13 @@ body { margin: 0; }
     font-size: 1rem;
     outline: none;
     transition: all 0.2s;
+    box-sizing: border-box;
 }
 .field input[type="text"]:focus {
     border-color: #5865F2;
     box-shadow: 0 0 0 3px rgba(88,101,242,0.2);
 }
 
-/* 類型選擇（radio 卡片） */
 .type-options { display: flex; gap: 12px; }
 .type-option {
     flex: 1;
@@ -162,9 +161,7 @@ body { margin: 0; }
     transform: translateY(-2px);
     box-shadow: 0 8px 30px rgba(88,101,242,0.5);
 }
-.btn-create:disabled { opacity: 0.5; cursor: not-allowed; }
 
-/* 建立中 */
 .creating {
     display: none;
     text-align: center;
@@ -183,7 +180,6 @@ body { margin: 0; }
 .creating h3 { margin: 0 0 8px; font-size: 1.3rem; }
 .creating p { color: #8890a8; margin: 0; }
 
-/* 伺服器列表 */
 .server-grid { display: grid; gap: 16px; }
 .server-card {
     background: #181b22;
@@ -273,7 +269,6 @@ body { margin: 0; }
     </aside>
 
     <main class="main">
-        <!-- 建立伺服器 -->
         <div id="section-create" class="section active">
             <h2>建立伺服器</h2>
             <div id="createForm">
@@ -306,7 +301,6 @@ body { margin: 0; }
             </div>
         </div>
 
-        <!-- 進入伺服器 -->
         <div id="section-servers" class="section">
             <h2>進入伺服器</h2>
             <div id="serverList" class="server-grid"></div>
@@ -323,7 +317,6 @@ function showSection(id, el) {
     if (id === 'servers') renderServers();
 }
 
-// 類型選擇
 document.querySelectorAll('.type-option').forEach(opt => {
     opt.addEventListener('click', () => {
         document.querySelectorAll('.type-option').forEach(o => o.classList.remove('selected'));
@@ -332,7 +325,6 @@ document.querySelectorAll('.type-option').forEach(opt => {
     });
 });
 
-// 從 localStorage 讀伺服器
 function getServers() {
     try { return JSON.parse(localStorage.getItem('botshop_servers') || '[]'); }
     catch(e) { return []; }
@@ -341,7 +333,6 @@ function saveServers(arr) {
     localStorage.setItem('botshop_servers', JSON.stringify(arr));
 }
 
-// 建立伺服器
 function createServer() {
     const name = document.getElementById('serverName').value.trim();
     const typeEl = document.querySelector('.type-option.selected input');
@@ -367,7 +358,6 @@ function createServer() {
     }, 10000);
 }
 
-// 渲染伺服器列表
 function renderServers() {
     const list = document.getElementById('serverList');
     const servers = getServers();
@@ -387,18 +377,11 @@ function renderServers() {
     `).join('');
 }
 
-// 進入伺服器
 function enterServer(i) {
     const servers = getServers();
     const s = servers[i];
     if (!s) return;
     window.location.href = '/server/' + encodeURIComponent(s.name);
-}
-
-// 初始化：如果已經有伺服器，預設顯示列表
-if (getServers().length > 0) {
-    showSection('servers', document.querySelectorAll('.nav-item')[1]);
-    document.querySelectorAll('.nav-item')[0].classList.remove('active');
 }
 </script>
 {% endblock %}
