@@ -75,5 +75,13 @@ def dashboard():
         return redirect(url_for("index"))
     return render_template("dashboard.html", shop=SHOP_NAME, user=current_user())
 
+
+
+@app.route("/server/<path:name>")
+def server_console(name):
+    if not current_user():
+        return redirect(url_for("index"))
+    return render_template("server_console.html", shop=SHOP_NAME, user=current_user(), server_name=name)
+
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))

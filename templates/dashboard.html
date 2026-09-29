@@ -392,9 +392,7 @@ function enterServer(i) {
     const servers = getServers();
     const s = servers[i];
     if (!s) return;
-    // TODO: 跳轉到下一個網站（伺服器控制台）
-    alert('進入伺服器：' + s.name + '\\n\\n（下一步：跳轉到伺服器控制台）');
-    // 之後改成： window.location.href = '/server/' + i;
+    window.location.href = '/server/' + encodeURIComponent(s.name);
 }
 
 // 初始化：如果已經有伺服器，預設顯示列表
