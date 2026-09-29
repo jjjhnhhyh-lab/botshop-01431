@@ -35,15 +35,10 @@ body { margin: 0; }
     margin-bottom: 4px;
     transition: all 0.15s;
     font-size: 0.95rem;
+    cursor: pointer;
 }
-.nav-item:hover {
-    background: #1f222b;
-    color: white;
-}
-.nav-item.active {
-    background: #5865F2;
-    color: white;
-}
+.nav-item:hover { background: #1f222b; color: white; }
+.nav-item.active { background: #5865F2; color: white; }
 .nav-item svg { width: 20px; height: 20px; }
 .user-box {
     border-top: 1px solid #22252e;
@@ -76,51 +71,187 @@ body { margin: 0; }
     overflow: hidden;
     text-overflow: ellipsis;
 }
-.user-handle {
-    font-size: 0.75rem;
-    opacity: 0.5;
-}
+.user-handle { font-size: 0.75rem; opacity: 0.5; }
 .logout-btn {
-    color: #666;
-    text-decoration: none;
-    font-size: 1.2rem;
-    padding: 4px 8px;
-    border-radius: 6px;
-    transition: all 0.15s;
+    color: #666; text-decoration: none; font-size: 1.2rem;
+    padding: 4px 8px; border-radius: 6px; transition: all 0.15s;
 }
 .logout-btn:hover { color: #e74c3c; background: #2a1f22; }
-.main { margin-left: 260px; flex: 1; padding: 40px; }
+
+.main { margin-left: 260px; flex: 1; padding: 40px; max-width: 900px; }
 .section { display: none; }
 .section.active { display: block; }
-.section h2 { margin: 0 0 1rem; }
-.section p { color: #8890a8; }
+
+.section h2 { margin: 0 0 1.5rem; font-size: 1.5rem; }
+
+/* 建立伺服器表單 */
+.field { margin-bottom: 20px; }
+.field label { display: block; font-size: 0.9rem; color: #8890a8; margin-bottom: 8px; }
+.field input[type="text"] {
+    width: 100%;
+    padding: 12px 16px;
+    background: #1a1d26;
+    border: 1px solid #2a2e3a;
+    border-radius: 10px;
+    color: white;
+    font-size: 1rem;
+    outline: none;
+    transition: all 0.2s;
+}
+.field input[type="text"]:focus {
+    border-color: #5865F2;
+    box-shadow: 0 0 0 3px rgba(88,101,242,0.2);
+}
+
+/* 類型選擇（radio 卡片） */
+.type-options { display: flex; gap: 12px; }
+.type-option {
+    flex: 1;
+    padding: 16px;
+    background: #1a1d26;
+    border: 2px solid #2a2e3a;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+.type-option:hover { border-color: #3a3e4a; }
+.type-option.selected {
+    border-color: #5865F2;
+    background: rgba(88,101,242,0.1);
+    box-shadow: 0 0 20px rgba(88,101,242,0.25);
+}
+.type-option input { display: none; }
+.type-option .type-name { font-size: 1rem; font-weight: 600; }
+.type-option .radio {
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    border: 2px solid #3a3e4a;
+    position: relative;
+    transition: all 0.2s;
+}
+.type-option.selected .radio {
+    border-color: #5865F2;
+    box-shadow: 0 0 10px rgba(88,101,242,0.6);
+}
+.type-option.selected .radio::after {
+    content: '';
+    position: absolute;
+    inset: 3px;
+    border-radius: 50%;
+    background: #5865F2;
+    box-shadow: 0 0 12px #5865F2;
+}
+
+.btn-create {
+    background: #5865F2;
+    color: white;
+    border: none;
+    padding: 14px 32px;
+    border-radius: 10px;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 4px 20px rgba(88,101,242,0.3);
+}
+.btn-create:hover:not(:disabled) {
+    background: #4752c4;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px rgba(88,101,242,0.5);
+}
+.btn-create:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* 建立中 */
+.creating {
+    display: none;
+    text-align: center;
+    padding: 60px 20px;
+}
+.creating.show { display: block; }
+.spinner {
+    width: 60px; height: 60px;
+    border: 4px solid rgba(88,101,242,0.2);
+    border-top-color: #5865F2;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 24px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.creating h3 { margin: 0 0 8px; font-size: 1.3rem; }
+.creating p { color: #8890a8; margin: 0; }
+
+/* 伺服器列表 */
+.server-grid { display: grid; gap: 16px; }
+.server-card {
+    background: #181b22;
+    border: 1px solid #262a33;
+    border-radius: 14px;
+    padding: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    transition: all 0.2s;
+}
+.server-card:hover {
+    border-color: #5865F2;
+    box-shadow: 0 0 30px rgba(88,101,242,0.15);
+}
+.server-card .info h4 { margin: 0 0 4px; font-size: 1.1rem; }
+.server-card .info p { margin: 0; font-size: 0.85rem; color: #8890a8; }
+.server-card .info .badge {
+    display: inline-block;
+    padding: 2px 10px;
+    background: rgba(88,101,242,0.2);
+    color: #7d86ff;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    margin-top: 6px;
+}
+.btn-enter {
+    background: #5865F2;
+    color: white;
+    border: none;
+    padding: 10px 24px;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+.btn-enter:hover {
+    background: #4752c4;
+    transform: translateY(-1px);
+}
+
+.empty {
+    text-align: center;
+    padding: 60px 20px;
+    color: #666;
+}
+.empty p { margin: 0.5rem 0; }
 </style>
 
 <div class="layout">
     <aside class="sidebar">
         <div class="logo">BotShop</div>
         <nav class="nav">
-            <a href="#" class="nav-item active" onclick="showSection('server', this); return false;">
+            <a class="nav-item active" onclick="showSection('create', this)">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="12" y1="5" x2="12" y2="19"/>
+                    <line x1="5" y1="12" x2="19" y2="12"/>
+                </svg>
+                建立伺服器
+            </a>
+            <a class="nav-item" onclick="showSection('servers', this)">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <rect x="2" y="3" width="20" height="14" rx="2"/>
                     <line x1="8" y1="21" x2="16" y2="21"/>
                     <line x1="12" y1="17" x2="12" y2="21"/>
                 </svg>
-                建立伺服器
-            </a>
-            <a href="#" class="nav-item" onclick="showSection('dev1', this); return false;">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <polyline points="16 18 22 12 16 6"/>
-                    <polyline points="8 6 2 12 8 18"/>
-                </svg>
-                開發中
-            </a>
-            <a href="#" class="nav-item" onclick="showSection('dev2', this); return false;">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <circle cx="12" cy="12" r="3"/>
-                    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
-                </svg>
-                開發
+                進入伺服器
             </a>
         </nav>
         <div class="user-box">
@@ -140,18 +271,45 @@ body { margin: 0; }
             <a href="/auth/logout" class="logout-btn" title="登出">⏻</a>
         </div>
     </aside>
+
     <main class="main">
-        <div id="section-server" class="section active">
+        <!-- 建立伺服器 -->
+        <div id="section-create" class="section active">
             <h2>建立伺服器</h2>
-            <p>伺服器建立功能開發中。</p>
+            <div id="createForm">
+                <div class="field">
+                    <label>伺服器名字</label>
+                    <input type="text" id="serverName" placeholder="輸入伺服器名字" maxlength="32">
+                </div>
+                <div class="field">
+                    <label>類型</label>
+                    <div class="type-options">
+                        <label class="type-option" id="optPy">
+                            <input type="radio" name="serverType" value="python">
+                            <span class="type-name">Python</span>
+                            <span class="radio"></span>
+                        </label>
+                        <label class="type-option" id="optJs">
+                            <input type="radio" name="serverType" value="js">
+                            <span class="type-name">JavaScript</span>
+                            <span class="radio"></span>
+                        </label>
+                    </div>
+                </div>
+                <button class="btn-create" id="btnCreate" onclick="createServer()">建立</button>
+            </div>
+
+            <div class="creating" id="creating">
+                <div class="spinner"></div>
+                <h3>正在為你建立伺服器...</h3>
+                <p>請稍候 10 秒</p>
+            </div>
         </div>
-        <div id="section-dev1" class="section">
-            <h2>開發中</h2>
-            <p>此功能正在開發。</p>
-        </div>
-        <div id="section-dev2" class="section">
-            <h2>開發</h2>
-            <p>此功能正在開發。</p>
+
+        <!-- 進入伺服器 -->
+        <div id="section-servers" class="section">
+            <h2>進入伺服器</h2>
+            <div id="serverList" class="server-grid"></div>
         </div>
     </main>
 </div>
@@ -162,6 +320,87 @@ function showSection(id, el) {
     document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
     document.getElementById('section-' + id).classList.add('active');
     el.classList.add('active');
+    if (id === 'servers') renderServers();
+}
+
+// 類型選擇
+document.querySelectorAll('.type-option').forEach(opt => {
+    opt.addEventListener('click', () => {
+        document.querySelectorAll('.type-option').forEach(o => o.classList.remove('selected'));
+        opt.classList.add('selected');
+        opt.querySelector('input').checked = true;
+    });
+});
+
+// 從 localStorage 讀伺服器
+function getServers() {
+    try { return JSON.parse(localStorage.getItem('botshop_servers') || '[]'); }
+    catch(e) { return []; }
+}
+function saveServers(arr) {
+    localStorage.setItem('botshop_servers', JSON.stringify(arr));
+}
+
+// 建立伺服器
+function createServer() {
+    const name = document.getElementById('serverName').value.trim();
+    const typeEl = document.querySelector('.type-option.selected input');
+    if (!name) { alert('請輸入伺服器名字'); return; }
+    if (!typeEl) { alert('請選擇類型'); return; }
+    const type = typeEl.value;
+
+    document.getElementById('createForm').style.display = 'none';
+    document.getElementById('creating').classList.add('show');
+
+    setTimeout(() => {
+        const servers = getServers();
+        servers.push({ name, type, created: Date.now() });
+        saveServers(servers);
+
+        document.getElementById('creating').classList.remove('show');
+        document.getElementById('createForm').style.display = '';
+        document.getElementById('serverName').value = '';
+        document.querySelectorAll('.type-option').forEach(o => o.classList.remove('selected'));
+        document.querySelectorAll('.type-option input').forEach(i => i.checked = false);
+
+        alert('✅ 伺服器「' + name + '」建立完成！');
+    }, 10000);
+}
+
+// 渲染伺服器列表
+function renderServers() {
+    const list = document.getElementById('serverList');
+    const servers = getServers();
+    if (servers.length === 0) {
+        list.innerHTML = '<div class="empty"><p>還沒有任何伺服器</p><p style="font-size:.85em">先去「建立伺服器」建一個</p></div>';
+        return;
+    }
+    list.innerHTML = servers.map((s, i) => `
+        <div class="server-card">
+            <div class="info">
+                <h4>${s.name}</h4>
+                <p>建立於 ${new Date(s.created).toLocaleString('zh-TW')}</p>
+                <span class="badge">${s.type === 'python' ? 'Python' : 'JavaScript'}</span>
+            </div>
+            <button class="btn-enter" onclick="enterServer(${i})">進入</button>
+        </div>
+    `).join('');
+}
+
+// 進入伺服器
+function enterServer(i) {
+    const servers = getServers();
+    const s = servers[i];
+    if (!s) return;
+    // TODO: 跳轉到下一個網站（伺服器控制台）
+    alert('進入伺服器：' + s.name + '\\n\\n（下一步：跳轉到伺服器控制台）');
+    // 之後改成： window.location.href = '/server/' + i;
+}
+
+// 初始化：如果已經有伺服器，預設顯示列表
+if (getServers().length > 0) {
+    showSection('servers', document.querySelectorAll('.nav-item')[1]);
+    document.querySelectorAll('.nav-item')[0].classList.remove('active');
 }
 </script>
 {% endblock %}
