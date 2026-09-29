@@ -4,243 +4,57 @@
 <meta charset="utf-8">
 <title>{{ server_name }} - BotShop</title>
 <meta name="viewport" content="width=device-width,initial-scale=1">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
 <style>
-* { box-sizing: border-box; }
-body {
-    margin: 0;
-    background: #0a0c12;
-    color: #e6e6e6;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    min-height: 100vh;
-}
-
-/* 頂部 bar */
-.server-bar {
-    background: #16181f;
-    border-bottom: 1px solid #22252e;
-    padding: 14px 24px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-}
-.server-name {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-weight: 700;
-    font-size: 1.05rem;
-}
-.dot {
-    width: 10px; height: 10px;
-    border-radius: 50%;
-    background: #2ecc71;
-    box-shadow: 0 0 8px #2ecc71;
-    animation: pulse 2s ease-in-out infinite;
-}
-.dot.starting { background: #f39c12; box-shadow: 0 0 8px #f39c12; animation: pulse 1s ease-in-out infinite; }
-.dot.running { background: #2ecc71; box-shadow: 0 0 8px #2ecc71; animation: pulse 2s ease-in-out infinite; }
-.dot.offline { background: #666; box-shadow: none; animation: none; }
-.pbtn:disabled { opacity: 0.4; cursor: not-allowed; }
-@keyframes pulse { 50% { opacity: 0.5; } }
-
-.power-buttons { display: flex; gap: 6px; }
-.pbtn {
-    border: none;
-    padding: 8px 16px;
-    border-radius: 6px;
-    font-size: 0.82rem;
-    font-weight: 700;
-    cursor: pointer;
-    color: white;
-    transition: all 0.15s;
-    font-family: inherit;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-}
-.pbtn-start { background: #2ecc71; }
-.pbtn-start:hover { background: #27ae60; }
-.pbtn-restart { background: #f39c12; }
-.pbtn-restart:hover { background: #e67e22; }
-.pbtn-stop { background: #e74c3c; }
-.pbtn-stop:hover { background: #c0392b; }
-.pbtn-kill { background: #34495e; }
-.pbtn-kill:hover { background: #2c3e50; }
-
-.back-link {
-    color: #8890a8;
-    text-decoration: none;
-    font-size: 0.85rem;
-    margin-right: 16px;
-}
-.back-link:hover { color: white; }
-
-/* Tabs */
-.tabs {
-    display: flex;
-    background: #0f1116;
-    border-bottom: 1px solid #22252e;
-    padding: 0 24px;
-}
-.tab {
-    padding: 12px 20px;
-    background: transparent;
-    color: #8890a8;
-    border: none;
-    border-bottom: 2px solid transparent;
-    font-size: 0.9rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s;
-    font-family: inherit;
-}
-.tab:hover { color: white; }
-.tab.active {
-    color: white;
-    border-bottom-color: #5865F2;
-}
-
-.panel { display: none; }
-.panel.active { display: block; }
-
-/* Console (Pterodactyl style) */
-.console-wrap {
-    height: calc(100vh - 130px);
-    display: flex;
-    flex-direction: column;
-}
-.terminal {
-    flex: 1;
-    background: #000;
-    padding: 16px;
-    font-family: 'SF Mono', 'Monaco', 'Consolas', 'Courier New', monospace;
-    font-size: 0.85rem;
-    overflow-y: auto;
-    line-height: 1.55;
-    color: #c8c8c8;
-}
-.terminal::-webkit-scrollbar { width: 8px; }
-.terminal::-webkit-scrollbar-track { background: #0a0a0a; }
-.terminal::-webkit-scrollbar-thumb { background: #222; border-radius: 4px; }
-
-.tline { word-break: break-all; }
-.tline.info { color: #7d86ff; }
-.tline.ok { color: #2ecc71; }
-.tline.warn { color: #f39c12; }
-.tline.error { color: #e74c3c; }
-.tline.cmd { color: #fff; }
-.tline.cmd::before {
-    content: '$ ';
-    color: #2ecc71;
-}
-
-.command-line {
-    display: flex;
-    align-items: center;
-    background: #0a0a0a;
-    border-top: 1px solid #222;
-    padding: 10px 16px;
-    font-family: 'SF Mono', 'Monaco', 'Consolas', monospace;
-    gap: 8px;
-}
-.command-line .prompt { color: #2ecc71; font-size: 0.9rem; }
-.command-line input {
-    flex: 1;
-    background: transparent;
-    border: none;
-    color: #e6e6e6;
-    font-size: 0.88rem;
-    font-family: inherit;
-    outline: none;
-    padding: 4px 0;
-}
-.command-line input::placeholder { color: #444; }
-
-/* AI 助手 */
-.ai-wrap { padding: 40px 24px; }
-.ai-box {
-    background: #181b22;
-    border: 1px solid #262a33;
-    border-radius: 12px;
-    padding: 40px;
-    text-align: center;
-    max-width: 600px;
-    margin: 0 auto;
-}
-.ai-box .icon { font-size: 4rem; margin-bottom: 16px; }
-.ai-box h3 { margin: 0 0 8px; }
-.ai-box p { color: #8890a8; margin: 0; }
-
-/* 檔案管理 */
-.files-wrap { padding: 24px; }
-.files-toolbar { display: flex; gap: 12px; margin-bottom: 20px; }
-.btn-newfolder, .btn-upload {
-    border: none;
-    padding: 10px 20px;
-    border-radius: 8px;
-    font-size: 0.9rem;
-    font-weight: 600;
-    cursor: pointer;
-    color: white;
-    transition: all 0.2s;
-    font-family: inherit;
-}
-.btn-newfolder { background: #5865F2; }
-.btn-newfolder:hover { background: #4752c4; }
-.btn-upload { background: #2ecc71; }
-.btn-upload:hover { background: #27ae60; }
-
-.files-header, .file-row {
-    display: grid;
-    grid-template-columns: 1fr 120px 80px;
-    padding: 12px 16px;
-    align-items: center;
-}
-.files-header {
-    border-bottom: 1px solid #22252e;
-    font-size: 0.78rem;
-    color: #666;
-    text-transform: uppercase;
-}
-.file-row {
-    border-bottom: 1px solid #1a1d26;
-    transition: background 0.15s;
-}
-.file-row:hover { background: #16181f; }
-.file-row .name { display: flex; align-items: center; gap: 10px; color: white; }
-.file-row .size { color: #8890a8; font-size: 0.88rem; }
-.file-row .actions button {
-    background: transparent;
-    color: #666;
-    border: none;
-    cursor: pointer;
-    padding: 4px 8px;
-    border-radius: 6px;
-}
-.file-row .actions button:hover { color: #e74c3c; background: #2a1f22; }
-
-.empty-files {
-    text-align: center;
-    padding: 60px 20px;
-    color: #666;
-}
-.empty-files .icon { font-size: 3rem; margin-bottom: 12px; opacity: 0.4; }
-.total { text-align: right; padding: 16px; color: #8890a8; font-size: 0.85rem; }
+*{box-sizing:border-box}
+body{margin:0;background:#0e1015;color:#e6e6e6;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;min-height:100vh}
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:14px 24px;background:#16181f;border-bottom:1px solid #22252e}
+.server-name{font-size:1.1rem;font-weight:700}
+.power-buttons{display:flex;gap:8px}
+.pbtn{border:none;padding:10px 24px;border-radius:6px;font-size:.85rem;font-weight:600;color:white;cursor:pointer;transition:all .15s;font-family:inherit}
+.pbtn-start,.pbtn-restart{background:#4a5568}
+.pbtn-start:hover,.pbtn-restart:hover{background:#5a6578}
+.pbtn-stop{background:#e53e3e}
+.pbtn-stop:hover{background:#c53030}
+.pbtn:disabled{opacity:.4;cursor:not-allowed}
+.tabs{display:flex;background:#0e1015;border-bottom:1px solid #22252e;padding:0 24px}
+.tab{padding:12px 20px;background:transparent;color:#8890a8;border:none;border-bottom:2px solid transparent;font-size:.9rem;font-weight:600;cursor:pointer;font-family:inherit}
+.tab.active{color:white;border-bottom-color:#5865F2}
+.panel{display:none}
+.panel.active{display:block}
+.console-grid{display:grid;grid-template-columns:1fr 340px;border-bottom:1px solid #22252e}
+.console-left{display:flex;flex-direction:column;background:#000;height:500px;border-right:1px solid #22252e}
+.terminal{flex:1;padding:16px;overflow-y:auto;font-family:'SF Mono','Monaco','Consolas',monospace;font-size:.82rem;line-height:1.55;color:#c8c8c8}
+.terminal::-webkit-scrollbar{width:8px}
+.terminal::-webkit-scrollbar-thumb{background:#222;border-radius:4px}
+.tline{word-break:break-all}
+.tline.info{color:#7d86ff}
+.tline.ok{color:#2ecc71}
+.tline.warn{color:#f39c12}
+.tline.error{color:#e74c3c}
+.command-line{display:flex;align-items:center;background:#0a0a0a;border-top:1px solid #222;padding:10px 16px;gap:8px;font-family:'SF Mono','Monaco','Consolas',monospace}
+.command-line .prompt{color:#8890a8;font-size:.9rem}
+.command-line input{flex:1;background:transparent;border:none;color:#e6e6e6;font-size:.85rem;font-family:inherit;outline:none}
+.command-line input::placeholder{color:#444}
+.info-area{display:flex;flex-direction:column;gap:12px;padding:16px;background:#0e1015;overflow-y:auto;height:500px}
+.info-card{display:flex;align-items:center;gap:14px;background:#16181f;border:1px solid #22252e;border-radius:10px;padding:14px 18px}
+.info-card .icon{width:40px;height:40px;border-radius:8px;background:#1f2230;display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0}
+.info-card .label{font-size:.72rem;color:#666;text-transform:uppercase;letter-spacing:.05em}
+.info-card .value{font-size:.95rem;font-weight:600;color:white;margin-top:2px}
+.charts{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;padding:16px}
+.chart-card{background:#16181f;border:1px solid #22252e;border-radius:10px;padding:16px}
+.chart-title{font-size:.75rem;color:#666;text-transform:uppercase;letter-spacing:.05em;margin-bottom:12px}
+.chart-card canvas{width:100%!important;height:120px!important}
 </style>
 </head>
 <body>
 
-<div class="server-bar">
-    <div class="server-name">
-        <a href="/dashboard" class="back-link">← 返回</a>
-        <span class="dot" id="statusDot"></span>
-        <span id="serverName">{{ server_name }}</span>
-    </div>
+<div class="topbar">
+    <div class="server-name">{{ server_name }}</div>
     <div class="power-buttons">
-        <button class="pbtn pbtn-start" onclick="startServer()">▶ Start</button>
-        <button class="pbtn pbtn-restart" onclick="restartServer()">↻ Restart</button>
-        <button class="pbtn pbtn-stop" onclick="stopServer()">■ Stop</button>
-        <button class="pbtn pbtn-kill" onclick="killServer()">✖ Kill</button>
+        <button class="pbtn pbtn-start" onclick="startServer()">Start</button>
+        <button class="pbtn pbtn-restart" onclick="restartServer()">Restart</button>
+        <button class="pbtn pbtn-stop" onclick="stopServer()">Stop</button>
     </div>
 </div>
 
@@ -250,50 +64,53 @@ body {
     <button class="tab" onclick="showTab('files', this)">放資料夾</button>
 </div>
 
-<!-- Console -->
 <div id="panel-console" class="panel active">
-    <div class="console-wrap">
-        <div class="terminal" id="terminal"></div>
-        <form class="command-line" onsubmit="sendCommand(event)">
-            <span class="prompt">$</span>
-            <input type="text" id="cmdInput" placeholder="輸入指令..." autocomplete="off" autofocus>
-        </form>
-    </div>
-</div>
-
-<!-- AI -->
-<div id="panel-ai" class="panel">
-    <div class="ai-wrap">
-        <div class="ai-box">
-            <div class="icon">🤖</div>
-            <h3>AI 助手</h3>
-            <p>功能開發中</p>
+    <div class="console-grid">
+        <div class="console-left">
+            <div class="terminal" id="terminal"></div>
+            <form class="command-line" onsubmit="sendCommand(event)">
+                <span class="prompt">&raquo;</span>
+                <input type="text" id="cmdInput" placeholder="Type a command..." autocomplete="off">
+            </form>
+        </div>
+        <div class="info-area">
+            <div class="info-card"><div class="icon">🕐</div><div><div class="label">Uptime</div><div class="value" id="uptime">0h 0m 0s</div></div></div>
+            <div class="info-card"><div class="icon">📊</div><div><div class="label">CPU Load</div><div class="value" id="cpuVal">0.00% / ∞</div></div></div>
+            <div class="info-card"><div class="icon">💾</div><div><div class="label">Memory</div><div class="value" id="memVal">0 MiB / 512 MiB</div></div></div>
+            <div class="info-card"><div class="icon">💿</div><div><div class="label">Disk</div><div class="value" id="diskVal">0 MiB / 10 GiB</div></div></div>
+            <div class="info-card"><div class="icon">⬇️</div><div><div class="label">Network (Inbound)</div><div class="value" id="netIn">0 B</div></div></div>
+            <div class="info-card"><div class="icon">⬆️</div><div><div class="label">Network (Outbound)</div><div class="value" id="netOut">0 B</div></div></div>
         </div>
     </div>
+    <div class="charts">
+        <div class="chart-card"><div class="chart-title">CPU Load</div><canvas id="cpuChart"></canvas></div>
+        <div class="chart-card"><div class="chart-title">Memory</div><canvas id="memChart"></canvas></div>
+        <div class="chart-card"><div class="chart-title">Network</div><canvas id="netChart"></canvas></div>
+    </div>
 </div>
 
-<!-- Files -->
+<div id="panel-ai" class="panel">
+    <div style="padding:40px 24px;text-align:center;color:#666">
+        <div style="font-size:4rem">🤖</div><h3>AI 助手</h3><p>功能開發中</p>
+    </div>
+</div>
+
 <div id="panel-files" class="panel">
-    <div class="files-wrap">
-        <div class="files-toolbar">
-            <button class="btn-newfolder" onclick="newFolder()">📁 新增資料夾</button>
-            <button class="btn-upload" onclick="document.getElementById('fileInput').click()">📤 上傳檔案</button>
+    <div style="padding:24px">
+        <div style="display:flex;gap:12px;margin-bottom:20px">
+            <button style="background:#5865F2;color:white;border:none;padding:10px 20px;border-radius:8px;cursor:pointer;font-weight:600" onclick="newFolder()">📁 新增資料夾</button>
+            <button style="background:#2ecc71;color:white;border:none;padding:10px 20px;border-radius:8px;cursor:pointer;font-weight:600" onclick="document.getElementById('fileInput').click()">📤 上傳檔案</button>
             <input type="file" id="fileInput" style="display:none" onchange="handleUpload(event)">
         </div>
-        <div class="files-header">
-            <div>名稱</div>
-            <div>大小</div>
-            <div></div>
-        </div>
         <div id="fileList"></div>
-        <div class="total" id="totalSize"></div>
+        <div id="totalSize" style="text-align:right;color:#8890a8;padding:16px;font-size:.85rem"></div>
     </div>
 </div>
 
 <script>
 const SERVER_NAME = {{ server_name|tojson }};
 const STORAGE_KEY = 'botshop_files_' + SERVER_NAME;
-let running = false;
+let running = false, uptimeSeconds = 0, uptimeTimer = null, statsTimer = null;
 
 function showTab(id, el) {
     document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
@@ -301,51 +118,60 @@ function showTab(id, el) {
     document.getElementById('panel-' + id).classList.add('active');
     el.classList.add('active');
     if (id === 'files') renderFiles();
-    if (id === 'console') document.getElementById('cmdInput').focus();
 }
 
-// ── Terminal ──
 const term = document.getElementById('terminal');
-
 function tlog(text, cls = '') {
-    const div = document.createElement('div');
-    div.className = 'tline ' + cls;
-    div.textContent = text;
-    term.appendChild(div);
+    const d = document.createElement('div');
+    d.className = 'tline ' + cls;
+    d.textContent = text;
+    term.appendChild(d);
     term.scrollTop = term.scrollHeight;
-}
-
-function setRunning(state) {
-    running = state;
-    const dot = document.getElementById('statusDot');
-    if (state) dot.classList.remove('offline');
-    else dot.classList.add('offline');
-}
-
-// ── 啟動/停止/重啟 ──
-function setDot(state) {
-    const dot = document.getElementById('statusDot');
-    dot.classList.remove('offline', 'starting', 'running');
-    dot.classList.add(state);
-}
-function setButtons(disabled) {
-    document.querySelectorAll('.pbtn').forEach(b => b.disabled = disabled);
 }
 function tlogSeq(lines, classes, delay, onDone) {
     let i = 0;
     const t = setInterval(() => {
         tlog(lines[i], classes[i] || '');
         i++;
-        if (i >= lines.length) {
-            clearInterval(t);
-            if (onDone) onDone();
-        }
+        if (i >= lines.length) { clearInterval(t); if (onDone) onDone(); }
     }, delay);
 }
+function setButtons(d) { document.querySelectorAll('.pbtn').forEach(b => b.disabled = d); }
+
+function fmtUptime(s) {
+    return Math.floor(s/3600) + 'h ' + Math.floor((s%3600)/60) + 'm ' + (s%60) + 's';
+}
+function startUptime() {
+    if (uptimeTimer) return;
+    uptimeSeconds = 0;
+    uptimeTimer = setInterval(() => {
+        uptimeSeconds++;
+        document.getElementById('uptime').textContent = fmtUptime(uptimeSeconds);
+    }, 1000);
+}
+function stopUptime() { if (uptimeTimer) { clearInterval(uptimeTimer); uptimeTimer = null; } }
+
+let cpuChart, memChart, netChart;
+function initCharts() {
+    const opts = {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: { x: { display: false }, y: { beginAtZero: true, grid: { color: '#1a1d26' }, ticks: { color: '#666', font: { size: 9 } } } },
+        animation: false,
+        elements: { line: { borderColor: '#00d9ff', borderWidth: 2, tension: 0.3 }, point: { radius: 0 } }
+    };
+    const mk = id => new Chart(document.getElementById(id), {
+        type: 'line',
+        data: { labels: Array(30).fill(''), datasets: [{ data: Array(30).fill(0), borderColor: '#00d9ff', backgroundColor: 'rgba(0,217,255,0.05)', fill: true }] },
+        options: opts
+    });
+    cpuChart = mk('cpuChart'); memChart = mk('memChart'); netChart = mk('netChart');
+}
+function push(c, v) { c.data.datasets[0].data.push(v); c.data.datasets[0].data.shift(); c.update('none'); }
+
 function startServer() {
     if (running) return;
     setButtons(true);
-    setDot('starting');
     const files = getFiles();
     if (files.length === 0) {
         tlogSeq([
@@ -361,10 +187,7 @@ function startServer() {
             '[BotShop Daemon]: 結束代碼：2',
             '[BotShop Daemon]: 記憶體不足：false',
             '[BotShop Daemon]: 已中止自動重新啟動，上一次當機發生在不到 60 秒之前。'
-        ], ['', '', '', '', 'info', 'info', 'error', 'error', 'error', 'error', 'error', 'error'], 500, () => {
-            setDot('offline');
-            setButtons(false);
-        });
+        ], ['', '', '', '', 'info', 'info', 'error', 'error', 'error', 'error', 'error', 'error'], 500, () => setButtons(false));
         return;
     }
     tlogSeq([
@@ -378,9 +201,10 @@ function startServer() {
         'logged in as botshop (running)',
         'BotShop@BotShop~ $ Server marked as running...'
     ], ['', '', '', '', 'info', 'info', '', 'ok', 'ok'], 600, () => {
-        setDot('running');
         setButtons(false);
         running = true;
+        startUptime();
+        startStats();
     });
 }
 function stopServer() {
@@ -392,14 +216,16 @@ function stopServer() {
         '[BotShop Daemon]: 伺服器已停止',
         'BotShop@BotShop~ $ Server marked as offline...'
     ], ['warn', '', 'ok', 'ok'], 400, () => {
-        setDot('offline');
         setButtons(false);
         running = false;
+        stopUptime();
+        stopStats();
     });
 }
 function restartServer() {
     if (!running) { startServer(); return; }
     setButtons(true);
+    stopStats(); stopUptime();
     tlogSeq([
         'BotShop@BotShop~ $ Server marked as restarting...',
         '[BotShop Daemon]: 停止伺服器...',
@@ -408,92 +234,76 @@ function restartServer() {
         "BotShop@BotShop~ $ bash -c 'cd /home/container && python3 bot.py'",
         'BotShop@BotShop~ $ Server marked as running...'
     ], ['warn', '', '', '', 'info', 'ok'], 500, () => {
-        setDot('running');
         setButtons(false);
-    });
-}
-function killServer() {
-    setButtons(true);
-    tlogSeq([
-        '[BotShop Daemon]: 強制終止伺服器 (SIGKILL)',
-        'BotShop@BotShop~ $ Server marked as offline...'
-    ], ['error', 'error'], 300, () => {
-        setDot('offline');
-        setButtons(false);
-        running = false;
+        uptimeSeconds = 0;
+        startUptime();
+        startStats();
     });
 }
 
-// ── 指令輸入 ──
+function startStats() {
+    if (statsTimer) return;
+    statsTimer = setInterval(() => {
+        const cpu = Math.random() * 0.1;
+        const mem = 40 + Math.random() * 5;
+        const nIn = Math.random() * 50;
+        const nOut = Math.random() * 30;
+        document.getElementById('cpuVal').textContent = cpu.toFixed(2) + '% / ∞';
+        document.getElementById('memVal').textContent = mem.toFixed(2) + ' MiB / 512 MiB';
+        document.getElementById('diskVal').textContent = '36.76 MiB / 10 GiB';
+        document.getElementById('netIn').textContent = nIn.toFixed(2) + ' KiB';
+        document.getElementById('netOut').textContent = nOut.toFixed(2) + ' KiB';
+        push(cpuChart, cpu);
+        push(memChart, mem);
+        push(netChart, nIn + nOut);
+    }, 1000);
+}
+function stopStats() { if (statsTimer) { clearInterval(statsTimer); statsTimer = null; } }
+
 function sendCommand(e) {
     e.preventDefault();
     const input = document.getElementById('cmdInput');
     const cmd = input.value.trim();
     if (!cmd) return;
     input.value = '';
-    tlog('$ ' + cmd, 'cmd');
-
-    // 簡單指令處理
-    const parts = cmd.split(/\s+/);
-    const c = parts[0].toLowerCase();
-
-    switch (c) {
-        case 'help':
-            tlog('可用指令：', 'info');
-            tlog('  help        顯示幫助', 'info');
-            tlog('  ls          列出檔案', 'info');
-            tlog('  clear       清空終端機', 'info');
-            tlog('  whoami      顯示目前使用者', 'info');
-            tlog('  date        顯示時間', 'info');
-            break;
-        case 'ls': {
-            const files = getFiles();
-            if (files.length === 0) tlog('（空）', 'info');
-            else files.forEach(f => tlog('  ' + (f.type === 'folder' ? '📁 ' : '📄 ') + f.name, 'info'));
-            break;
-        }
-        case 'clear':
-            term.innerHTML = '';
-            break;
-        case 'whoami':
-            tlog('botshop', 'ok');
-            break;
-        case 'date':
-            tlog(new Date().toString(), 'info');
-            break;
-        default:
-            tlog('command not found: ' + c, 'error');
+    tlog('> ' + cmd, 'cmd');
+    const c = cmd.split(/\s+/)[0].toLowerCase();
+    if (c === 'help') tlog('指令: help, ls, clear, whoami, date', 'info');
+    else if (c === 'ls') {
+        const files = getFiles();
+        if (!files.length) tlog('（空）', 'info');
+        else files.forEach(f => tlog('  ' + f.name, 'info'));
     }
+    else if (c === 'clear') term.innerHTML = '';
+    else if (c === 'whoami') tlog('botshop', 'ok');
+    else if (c === 'date') tlog(new Date().toString(), 'info');
+    else tlog('command not found: ' + c, 'error');
 }
 
-// ── 檔案管理 ──
 function getFiles() {
-    try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); }
-    catch(e) { return []; }
+    try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); } catch(e) { return []; }
 }
-function saveFiles(arr) {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(arr));
-}
-function fmtSize(bytes) {
-    if (bytes < 1024) return bytes + ' B';
-    if (bytes < 1024*1024) return (bytes/1024).toFixed(1) + ' KB';
-    if (bytes < 1024*1024*1024) return (bytes/1024/1024).toFixed(1) + ' MB';
-    return (bytes/1024/1024/1024).toFixed(2) + ' GB';
+function saveFiles(a) { localStorage.setItem(STORAGE_KEY, JSON.stringify(a)); }
+function fmtSize(b) {
+    if (b < 1024) return b + ' B';
+    if (b < 1048576) return (b/1024).toFixed(1) + ' KB';
+    if (b < 1073741824) return (b/1048576).toFixed(1) + ' MB';
+    return (b/1073741824).toFixed(2) + ' GB';
 }
 function renderFiles() {
     const list = document.getElementById('fileList');
     const total = document.getElementById('totalSize');
     const files = getFiles();
-    if (files.length === 0) {
-        list.innerHTML = '<div class="empty-files"><div class="icon">📂</div><p>還沒有任何檔案</p><p style="font-size:.85em;opacity:.7">點「上傳檔案」開始</p></div>';
+    if (!files.length) {
+        list.innerHTML = '<div style="text-align:center;padding:60px;color:#666">還沒有任何檔案</div>';
         total.textContent = '';
         return;
     }
     list.innerHTML = files.map((f, i) => `
-        <div class="file-row">
-            <div class="name"><span>${f.type === 'folder' ? '📁' : '📄'}</span><span>${f.name}</span></div>
-            <div class="size">${f.type === 'folder' ? '—' : fmtSize(f.size)}</div>
-            <div class="actions"><button onclick="deleteFile(${i})">✕</button></div>
+        <div style="display:grid;grid-template-columns:1fr 120px 80px;padding:14px 16px;border-bottom:1px solid #1a1d26;align-items:center">
+            <div>${f.type === 'folder' ? '📁' : '📄'} ${f.name}</div>
+            <div style="color:#8890a8">${f.type === 'folder' ? '—' : fmtSize(f.size)}</div>
+            <div style="text-align:right"><button onclick="deleteFile(${i})" style="background:transparent;border:none;color:#666;cursor:pointer">✕</button></div>
         </div>
     `).join('');
     const sum = files.reduce((s, f) => s + (f.size || 0), 0);
@@ -501,36 +311,32 @@ function renderFiles() {
 }
 function newFolder() {
     const name = prompt('資料夾名稱：');
-    if (!name || !name.trim()) return;
+    if (!name) return;
     const files = getFiles();
     files.push({ type: 'folder', name: name.trim(), size: 0 });
     saveFiles(files);
     renderFiles();
 }
 function handleUpload(e) {
-    const file = e.target.files[0];
-    if (!file) return;
+    const f = e.target.files[0];
+    if (!f) return;
     const files = getFiles();
-    files.push({ type: 'file', name: file.name, size: file.size });
+    files.push({ type: 'file', name: f.name, size: f.size });
     saveFiles(files);
     renderFiles();
     e.target.value = '';
 }
 function deleteFile(i) {
-    if (!confirm('確定刪除？')) return;
+    if (!confirm('刪除？')) return;
     const files = getFiles();
     files.splice(i, 1);
     saveFiles(files);
     renderFiles();
 }
 
-// 初始化
+initCharts();
 tlog('Welcome to ' + SERVER_NAME + ' console', 'ok');
-tlog('連接中...', 'info');
-setTimeout(() => {
-    tlog('✓ 已連接', 'ok');
-    tlog('輸入 help 查看可用指令', 'info');
-}, 500);
+setTimeout(() => tlog('BotShop@BotShop~ $ 等待指令...', 'info'), 500);
 </script>
 
 </body>
