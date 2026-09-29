@@ -6,30 +6,15 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
 <style>
-body{background:#0f1116;color:#e6e6e6}
-.ok{color:#2ecc71}.bad{color:#e74c3c}.idle{color:#f39c12}
+body{background:#0f1116;color:#e6e6e6;margin:0}
 a{color:#7d86ff;text-decoration:none}
-.card{padding:1rem;border:1px solid #262a33;border-radius:8px;background:#181b22}
 </style>
 </head>
 <body>
-<nav class="container">
-<ul><li><a href="/"><b>🛒 {{ shop }}</b></a></li></ul>
-<ul>
-{% if session.discord_user %}
-<li><a href="/dashboard">{{ session.discord_user.global_name }}</a></li>
-<li><a href="/auth/logout">登出</a></li>
-{% endif %}
-{% if session.admin %}
-<li><a href="/admin">管理後台</a></li>
-<li><a href="/logout">管理登出</a></li>
-{% else %}
-<li><a href="/login">管理員</a></li>
-{% endif %}
-</ul>
-</nav>
 <main class="container">
-{% with m=get_flashed_messages() %}{% for x in m %}<article>{{ x }}</article>{% endfor %}{% endwith %}
+{% with m=get_flashed_messages() %}{% for x in m %}
+<article>{{ x }}</article>
+{% endfor %}{% endwith %}
 {% block body %}{% endblock %}
 </main>
 </body>
