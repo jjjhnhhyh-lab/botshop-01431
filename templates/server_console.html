@@ -1,1 +1,138 @@
-...内容...
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<title>{{ server_name }} - BotShop</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+* { box-sizing: border-box; }
+body {
+    margin: 0;
+    background: #0a0c12;
+    color: #e6e6e6;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    min-height: 100vh;
+}
+.topbar {
+    padding: 16px 32px;
+    background: #16181f;
+    border-bottom: 1px solid #22252e;
+}
+.back {
+    color: #8890a8;
+    text-decoration: none;
+    font-size: 0.95rem;
+    transition: color 0.2s;
+}
+.back:hover { color: white; }
+.console-wrap {
+    max-width: 1000px;
+    margin: 40px auto;
+    padding: 0 24px;
+}
+.server-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 24px;
+}
+.server-header h1 { margin: 0; font-size: 1.8rem; color: white; }
+.status {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: #2ecc71;
+    font-size: 0.9rem;
+}
+.status .dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: #2ecc71;
+    box-shadow: 0 0 10px #2ecc71;
+    animation: pulse 2s ease-in-out infinite;
+}
+@keyframes pulse { 50% { opacity: 0.5; } }
+.controls { display: flex; gap: 12px; margin-bottom: 24px; }
+.btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    color: white;
+}
+.btn-start { background: #2ecc71; }
+.btn-start:hover { background: #27ae60; }
+.btn-stop { background: #e74c3c; }
+.btn-stop:hover { background: #c0392b; }
+.btn-restart { background: #f39c12; }
+.btn-restart:hover { background: #e67e22; }
+.console-box {
+    background: #05060a;
+    border: 1px solid #262a33;
+    border-radius: 12px;
+    padding: 20px;
+    font-family: 'Courier New', monospace;
+    font-size: 0.9rem;
+    height: 400px;
+    overflow-y: auto;
+    color: #8890a8;
+    line-height: 1.6;
+}
+.line { padding: 2px 0; }
+.line.ok { color: #2ecc71; }
+.line.info { color: #7d86ff; }
+.line.warn { color: #f39c12; }
+.cursor {
+    display: inline-block;
+    width: 8px;
+    background: #8890a8;
+    animation: blink 1s step-end infinite;
+}
+@keyframes blink { 50% { opacity: 0; } }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+    <a href="/dashboard" class="back">← 返回</a>
+</div>
+
+<div class="console-wrap">
+    <div class="server-header">
+        <h1>{{ server_name }}</h1>
+        <div class="status">
+            <span class="dot"></span>
+            線上
+        </div>
+    </div>
+
+    <div class="controls">
+        <button class="btn btn-start" onclick="logLine('> 啟動伺服器...', 'info')">▶ 啟動</button>
+        <button class="btn btn-stop" onclick="logLine('> 停止伺服器...', 'warn')">■ 停止</button>
+        <button class="btn btn-restart" onclick="logLine('> 重啟伺服器...', 'info')">↻ 重啟</button>
+    </div>
+
+    <div class="console-box" id="console">
+        <div class="line info">[Console] 已連線到伺服器：{{ server_name }}</div>
+        <div class="line ok">[Server] 伺服器正在運行中...</div>
+        <div class="line">[Server] 等待指令中<span class="cursor"></span></div>
+    </div>
+</div>
+
+<script>
+function logLine(text, cls = '') {
+    const box = document.getElementById('console');
+    const div = document.createElement('div');
+    div.className = 'line ' + cls;
+    const now = new Date().toLocaleTimeString('zh-TW');
+    div.textContent = '[' + now + '] ' + text;
+    box.appendChild(div);
+    box.scrollTop = box.scrollHeight;
+}
+</script>
+
+</body>
+</html>
