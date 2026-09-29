@@ -37,7 +37,10 @@ body {
     box-shadow: 0 0 8px #2ecc71;
     animation: pulse 2s ease-in-out infinite;
 }
+.dot.starting { background: #f39c12; box-shadow: 0 0 8px #f39c12; animation: pulse 1s ease-in-out infinite; }
+.dot.running { background: #2ecc71; box-shadow: 0 0 8px #2ecc71; animation: pulse 2s ease-in-out infinite; }
 .dot.offline { background: #666; box-shadow: none; animation: none; }
+.pbtn:disabled { opacity: 0.4; cursor: not-allowed; }
 @keyframes pulse { 50% { opacity: 0.5; } }
 
 .power-buttons { display: flex; gap: 6px; }
@@ -320,51 +323,105 @@ function setRunning(state) {
 }
 
 // ── 啟動/停止/重啟 ──
+function setDot(state) {
+    const dot = document.getElementById('statusDot');
+    dot.classList.remove('offline', 'starting', 'running');
+    dot.classList.add(state);
+}
+function setButtons(disabled) {
+    document.querySelectorAll('.pbtn').forEach(b => b.disabled = disabled);
+}
+function tlogSeq(lines, classes, delay, onDone) {
+    let i = 0;
+    const t = setInterval(() => {
+        tlog(lines[i], classes[i] || '');
+        i++;
+        if (i >= lines.length) {
+            clearInterval(t);
+            if (onDone) onDone();
+        }
+    }, delay);
+}
 function startServer() {
-    if (running) { tlog('伺服器已在運行中', 'warn'); return; }
+    if (running) return;
+    setButtons(true);
+    setDot('starting');
     const files = getFiles();
     if (files.length === 0) {
-        tlog('✗ 錯誤：伺服器內沒有任何檔案，無法啟動', 'error');
-        tlog('✗ 請先到「放資料夾」上傳檔案或新增資料夾', 'error');
+        tlogSeq([
+            '[Pterodactyl Daemon]: ---------- 正在拉取 Docker 容器映像檔 ----------',
+            '[Pterodactyl Daemon]: 已完成拉取 Docker 容器映像檔',
+            '[Pterodactyl Daemon]: ---------- 環境變數 ----------',
+            '[Pterodactyl Daemon]: 更新伺服器資源',
+            'container@pterodactyl~ Server marked as starting...',
+            "container@pterodactyl~ bash -c 'cd /home/container && python3 bot.py'",
+            "python3: can't open file '/home/container/bot.py': [Errno 2] No such file or directory",
+            'container@pterodactyl~ Server marked as offline...',
+            '[Pterodactyl Daemon]: ---------- 偵測到伺服器處理程序處於當機狀態！ ----------',
+            '[Pterodactyl Daemon]: 結束代碼：2',
+            '[Pterodactyl Daemon]: 記憶體不足：false',
+            '[Pterodactyl Daemon]: 已中止自動重新啟動，上一次當機發生在不到 60 秒之前。'
+        ], ['', '', '', '', 'info', 'info', 'error', 'error', 'error', 'error', 'error', 'error'], 500, () => {
+            setDot('offline');
+            setButtons(false);
+        });
         return;
     }
-    tlog('> 正在啟動伺服器...', 'info');
-    setTimeout(() => {
-        setRunning(true);
-        tlog('✓ 伺服器已啟動', 'ok');
-        tlog('  botshop@botshop:~$ 等待指令...', 'info');
-    }, 1000);
+    tlogSeq([
+        '[Pterodactyl Daemon]: ---------- 正在拉取 Docker 容器映像檔 ----------',
+        '[Pterodactyl Daemon]: 已完成拉取 Docker 容器映像檔',
+        '[Pterodactyl Daemon]: ---------- 環境變數 ----------',
+        '[Pterodactyl Daemon]: 更新伺服器資源',
+        'container@pterodactyl~ Server marked as starting...',
+        "container@pterodactyl~ bash -c 'cd /home/container && python3 bot.py'",
+        'Python 3.13.15',
+        'logged in as botshop (running)',
+        'container@pterodactyl~ Server marked as running...'
+    ], ['', '', '', '', 'info', 'info', '', 'ok', 'ok'], 600, () => {
+        setDot('running');
+        setButtons(false);
+        running = true;
+    });
 }
-
 function stopServer() {
-    if (!running) { tlog('伺服器未在運行', 'warn'); return; }
-    tlog('> 正在停止伺服器...', 'warn');
-    setTimeout(() => {
-        setRunning(false);
-        tlog('✓ 伺服器已停止', 'ok');
-    }, 800);
+    if (!running) return;
+    setButtons(true);
+    tlogSeq([
+        'container@pterodactyl~ Server marked as stopping...',
+        '[Pterodactyl Daemon]: 發送停止訊號 (SIGINT)',
+        '[Pterodactyl Daemon]: 伺服器已停止',
+        'container@pterodactyl~ Server marked as offline...'
+    ], ['warn', '', 'ok', 'ok'], 400, () => {
+        setDot('offline');
+        setButtons(false);
+        running = false;
+    });
 }
-
 function restartServer() {
-    const files = getFiles();
-    if (files.length === 0) {
-        tlog('✗ 錯誤：伺服器內沒有任何檔案，無法重啟', 'error');
-        tlog('✗ 請先到「放資料夾」上傳檔案或新增資料夾', 'error');
-        return;
-    }
-    tlog('> 正在重啟伺服器...', 'info');
-    setTimeout(() => {
-        setRunning(true);
-        tlog('✓ 伺服器已重啟', 'ok');
-    }, 1000);
+    if (!running) { startServer(); return; }
+    setButtons(true);
+    tlogSeq([
+        'container@pterodactyl~ Server marked as restarting...',
+        '[Pterodactyl Daemon]: 停止伺服器...',
+        '[Pterodactyl Daemon]: 啟動伺服器...',
+        '[Pterodactyl Daemon]: 更新伺服器資源',
+        "container@pterodactyl~ bash -c 'cd /home/container && python3 bot.py'",
+        'container@pterodactyl~ Server marked as running...'
+    ], ['warn', '', '', '', 'info', 'ok'], 500, () => {
+        setDot('running');
+        setButtons(false);
+    });
 }
-
 function killServer() {
-    tlog('> 強制終止伺服器...', 'error');
-    setTimeout(() => {
-        setRunning(false);
-        tlog('✓ 伺服器已強制終止', 'ok');
-    }, 500);
+    setButtons(true);
+    tlogSeq([
+        '[Pterodactyl Daemon]: 強制終止伺服器 (SIGKILL)',
+        'container@pterodactyl~ Server marked as offline...'
+    ], ['error', 'error'], 300, () => {
+        setDot('offline');
+        setButtons(false);
+        running = false;
+    });
 }
 
 // ── 指令輸入 ──
