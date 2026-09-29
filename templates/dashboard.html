@@ -1,1 +1,44 @@
-...
+{% extends "base.html" %}
+{% block body %}
+<div style="display:flex;align-items:center;gap:16px;padding:16px;background:#181b22;border:1px solid #262a33;border-radius:12px;margin-bottom:2rem">
+{% if user.avatar %}
+<img src="https://cdn.discordapp.com/avatars/{{ user.id }}/{{ user.avatar }}.png?size=64" style="width:56px;height:56px;border-radius:50%;object-fit:cover" alt="">
+{% else %}
+<div style="width:56px;height:56px;border-radius:50%;background:#5865F2;display:flex;align-items:center;justify-content:center;font-size:1.5em;font-weight:700;color:white">{{ user.global_name[0] }}</div>
+{% endif %}
+<div>
+<h3 style="margin:0">{{ user.global_name }}</h3>
+<p style="margin:0;opacity:0.6;font-size:0.9em">@{{ user.username }}</p>
+</div>
+<a href="/auth/logout" style="margin-left:auto">登出</a>
+</div>
+
+<h3>🛒 商品</h3>
+{% if not items %}<p>目前沒有商品。</p>{% endif %}
+<div class="grid">
+{% for it in items %}
+<div class="card">
+<h5>{{ it.name }}</h5>
+<p style="opacity:0.7">{{ it.description or '' }}</p>
+<p>價格：<b>{{ cur }}{{ it.price }}</b> · 庫存：{{ it.stock }}</p>
+<form method="post" action="/dashboard/buy/{{ it.id }}">
+<input name="qty" type="number" min="1" value="1">
+<button {% if it.stock<=0 %}disabled{% endif %}>{% if it.stock<=0 %}售完{% else %}下單{% endif %}</button>
+</form>
+</div>
+{% endfor %}
+</div>
+
+<h3 style="margin-top:3rem">📦 我的訂單</h3>
+{% if not orders %}<p>還沒有訂單。</p>{% endif %}
+{% if orders %}
+<table>
+<thead><tr><th>#</th><th>商品</th><th>數量</th><th>金額</th><th>狀態</th></tr></thead>
+<tbody>
+{% for o in orders %}
+<tr><td>{{ o.id }}</td><td>{{ o.name }}</td><td>{{ o.qty }}</td><td>{{ cur }}{{ o.total }}</td><td>{{ o.status }}</td></tr>
+{% endfor %}
+</tbody>
+</table>
+{% endif %}
+{% endblock %}
