@@ -349,18 +349,18 @@ function startServer() {
     const files = getFiles();
     if (files.length === 0) {
         tlogSeq([
-            '[Pterodactyl Daemon]: ---------- 正在拉取 Docker 容器映像檔 ----------',
-            '[Pterodactyl Daemon]: 已完成拉取 Docker 容器映像檔',
-            '[Pterodactyl Daemon]: ---------- 環境變數 ----------',
-            '[Pterodactyl Daemon]: 更新伺服器資源',
-            'container@pterodactyl~ Server marked as starting...',
-            "container@pterodactyl~ bash -c 'cd /home/container && python3 bot.py'",
+            '[BotShop Daemon]: ---------- 正在拉取 Docker 容器映像檔 ----------',
+            '[BotShop Daemon]: 已完成拉取 Docker 容器映像檔',
+            '[BotShop Daemon]: ---------- 環境變數 ----------',
+            '[BotShop Daemon]: 更新伺服器資源',
+            'BotShop@BotShop~ $ Server marked as starting...',
+            "BotShop@BotShop~ $ bash -c 'cd /home/container && python3 bot.py'",
             "python3: can't open file '/home/container/bot.py': [Errno 2] No such file or directory",
-            'container@pterodactyl~ Server marked as offline...',
-            '[Pterodactyl Daemon]: ---------- 偵測到伺服器處理程序處於當機狀態！ ----------',
-            '[Pterodactyl Daemon]: 結束代碼：2',
-            '[Pterodactyl Daemon]: 記憶體不足：false',
-            '[Pterodactyl Daemon]: 已中止自動重新啟動，上一次當機發生在不到 60 秒之前。'
+            'BotShop@BotShop~ $ Server marked as offline...',
+            '[BotShop Daemon]: ---------- 偵測到伺服器處理程序處於當機狀態！ ----------',
+            '[BotShop Daemon]: 結束代碼：2',
+            '[BotShop Daemon]: 記憶體不足：false',
+            '[BotShop Daemon]: 已中止自動重新啟動，上一次當機發生在不到 60 秒之前。'
         ], ['', '', '', '', 'info', 'info', 'error', 'error', 'error', 'error', 'error', 'error'], 500, () => {
             setDot('offline');
             setButtons(false);
@@ -368,15 +368,15 @@ function startServer() {
         return;
     }
     tlogSeq([
-        '[Pterodactyl Daemon]: ---------- 正在拉取 Docker 容器映像檔 ----------',
-        '[Pterodactyl Daemon]: 已完成拉取 Docker 容器映像檔',
-        '[Pterodactyl Daemon]: ---------- 環境變數 ----------',
-        '[Pterodactyl Daemon]: 更新伺服器資源',
-        'container@pterodactyl~ Server marked as starting...',
-        "container@pterodactyl~ bash -c 'cd /home/container && python3 bot.py'",
+        '[BotShop Daemon]: ---------- 正在拉取 Docker 容器映像檔 ----------',
+        '[BotShop Daemon]: 已完成拉取 Docker 容器映像檔',
+        '[BotShop Daemon]: ---------- 環境變數 ----------',
+        '[BotShop Daemon]: 更新伺服器資源',
+        'BotShop@BotShop~ $ Server marked as starting...',
+        "BotShop@BotShop~ $ bash -c 'cd /home/container && python3 bot.py'",
         'Python 3.13.15',
         'logged in as botshop (running)',
-        'container@pterodactyl~ Server marked as running...'
+        'BotShop@BotShop~ $ Server marked as running...'
     ], ['', '', '', '', 'info', 'info', '', 'ok', 'ok'], 600, () => {
         setDot('running');
         setButtons(false);
@@ -387,10 +387,10 @@ function stopServer() {
     if (!running) return;
     setButtons(true);
     tlogSeq([
-        'container@pterodactyl~ Server marked as stopping...',
-        '[Pterodactyl Daemon]: 發送停止訊號 (SIGINT)',
-        '[Pterodactyl Daemon]: 伺服器已停止',
-        'container@pterodactyl~ Server marked as offline...'
+        'BotShop@BotShop~ $ Server marked as stopping...',
+        '[BotShop Daemon]: 發送停止訊號 (SIGINT)',
+        '[BotShop Daemon]: 伺服器已停止',
+        'BotShop@BotShop~ $ Server marked as offline...'
     ], ['warn', '', 'ok', 'ok'], 400, () => {
         setDot('offline');
         setButtons(false);
@@ -401,12 +401,12 @@ function restartServer() {
     if (!running) { startServer(); return; }
     setButtons(true);
     tlogSeq([
-        'container@pterodactyl~ Server marked as restarting...',
-        '[Pterodactyl Daemon]: 停止伺服器...',
-        '[Pterodactyl Daemon]: 啟動伺服器...',
-        '[Pterodactyl Daemon]: 更新伺服器資源',
-        "container@pterodactyl~ bash -c 'cd /home/container && python3 bot.py'",
-        'container@pterodactyl~ Server marked as running...'
+        'BotShop@BotShop~ $ Server marked as restarting...',
+        '[BotShop Daemon]: 停止伺服器...',
+        '[BotShop Daemon]: 啟動伺服器...',
+        '[BotShop Daemon]: 更新伺服器資源',
+        "BotShop@BotShop~ $ bash -c 'cd /home/container && python3 bot.py'",
+        'BotShop@BotShop~ $ Server marked as running...'
     ], ['warn', '', '', '', 'info', 'ok'], 500, () => {
         setDot('running');
         setButtons(false);
@@ -415,8 +415,8 @@ function restartServer() {
 function killServer() {
     setButtons(true);
     tlogSeq([
-        '[Pterodactyl Daemon]: 強制終止伺服器 (SIGKILL)',
-        'container@pterodactyl~ Server marked as offline...'
+        '[BotShop Daemon]: 強制終止伺服器 (SIGKILL)',
+        'BotShop@BotShop~ $ Server marked as offline...'
     ], ['error', 'error'], 300, () => {
         setDot('offline');
         setButtons(false);
