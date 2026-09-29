@@ -213,5 +213,15 @@ def admin_st():
     try: return jsonify(ptero_status())
     except Exception as e: return jsonify(state="unreachable", error=str(e))
 
+
+
+@app.errorhandler(404)
+def not_found(e):
+    return render_template("404.html", shop=SHOP_NAME), 404
+
+@app.errorhandler(500)
+def server_error(e):
+    return render_template("404.html", shop=SHOP_NAME), 500
+
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
