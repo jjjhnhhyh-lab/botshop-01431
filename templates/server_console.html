@@ -284,7 +284,8 @@ function stripAnsi(str) {
 }
 
 function shouldSkip(line) {
-    const skip = [
+    const t = line.trim();
+    const skipPrefixes = [
         '[Pterodactyl Daemon]:',
         'Requirement already satisfied:',
         'container~ sh -c',
@@ -292,10 +293,13 @@ function shouldSkip(line) {
         'Pulling from ',
         'Status: Image is up to date',
         'Digest: sha256:',
-        'Requirement already satisfied',
     ];
-    const t = line.trim();
-    return skip.some(p => t.startsWith(p));
+    for (const p of skipPrefixes) {
+        if (t.startsWith(p)) return true;
+    }
+    // 過濾「[Scheduler] xxx 已停止 (exit X)」
+    if (/^\[Scheduler\] .+ 已停止 \(exit/.test(t)) return true;
+    return false;
 }
 
 let lastLine = '';
