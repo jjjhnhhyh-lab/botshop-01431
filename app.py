@@ -1,7 +1,7 @@
 import os, requests
 from pathlib import Path
 from urllib.parse import urlencode
-from flask import Flask, render_template, redirect, url_for, session, flash, request
+from flask import Flask, render_template, redirect, url_for, session, flash, request, jsonify
 from dotenv import load_dotenv
 load_dotenv(Path(__file__).resolve().parent / ".env")
 
