@@ -240,6 +240,25 @@ function initCharts() {
 }
 function pushData(c, v) { c.data.datasets[0].data.push(v); c.data.datasets[0].data.shift(); c.update('none'); }
 
+
+let lastLogId = 0;
+let consolePolling = null;
+
+function startConsolePolling() {
+    if (consolePolling) return;
+    consolePolling = setInterval(async () => {
+        try {
+            const res = await fetch('/api/console/recent?since_id=' + lastLogId);
+            const d = await res.json();
+            if (!d.ok) return;
+            for (const row of d.lines) {
+                tlog(row.line);
+                lastLogId = Math.max(lastLogId, row.id);
+            }
+        } catch(e) {}
+    }, 2000);
+}
+
 function startStats() {
     if (statsTimer) return;
     statsTimer = setInterval(() => {
@@ -500,6 +519,7 @@ function deleteFile(i) {
 }
 
 initCharts();
+startConsolePolling();
 setDot('offline');
 tlog('Welcome to ' + SERVER_NAME + ' console', 'ok');
 setTimeout(() => tlog('BotShop@BotShop~ $ 等待指令...', 'info'), 500);

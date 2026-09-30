@@ -196,5 +196,22 @@ def api_server_command():
         return jsonify(ok=False, msg="failed to create job"), 500
     return jsonify(ok=True, job_id=r.json()[0]["id"])
 
+
+
+@app.route("/api/console/recent")
+def api_console_recent():
+    if not current_user():
+        return jsonify(ok=False), 401
+    since_id = request.args.get("since_id", 0, type=int)
+    r = requests.get(
+        f"{URL}/rest/v1/console_logs",
+        headers=_h(),
+        params={"id": f"gt.{since_id}", "order": "id.asc", "limit": 100},
+        timeout=10
+    )
+    if r.status_code != 200:
+        return jsonify(ok=False), 500
+    return jsonify(ok=True, lines=r.json())
+
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
