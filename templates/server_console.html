@@ -50,7 +50,10 @@ body{margin:0;background:#0e1015;color:#e6e6e6;font-family:-apple-system,BlinkMa
 <body>
 
 <div class="topbar">
-    <div class="server-name">{{ server_name }}</div>
+    <div style="display:flex;align-items:center;gap:16px">
+        <a href="/dashboard" style="color:#8890a8;text-decoration:none;font-size:0.9rem">← 返回</a>
+        <div class="server-name">{{ server_name }}</div>
+    </div>
     <div class="power-buttons">
         <button class="pbtn pbtn-start" onclick="startServer()">Start</button>
         <button class="pbtn pbtn-restart" onclick="restartServer()">Restart</button>
