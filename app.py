@@ -7,6 +7,8 @@ load_dotenv(Path(__file__).resolve().parent / ".env")
 
 app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", "dev")
+URL = os.environ["SUPABASE_URL"].rstrip("/")
+KEY = os.environ["SUPABASE_KEY"]
 DC_CLIENT_ID     = os.environ.get("DISCORD_CLIENT_ID", "")
 DC_CLIENT_SECRET = os.environ.get("DISCORD_CLIENT_SECRET", "")
 DC_REDIRECT_URI  = os.environ.get("DISCORD_REDIRECT_URI",
