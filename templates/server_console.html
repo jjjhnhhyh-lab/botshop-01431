@@ -709,11 +709,7 @@ function deleteFile(i) {
 
 initCharts();
 restoreConsole();
-// 只有在 console 是空的時候才顯示 welcome（第一次載入）
-if (term.children.length === 0) {
-    tlog('Welcome to ' + SERVER_NAME + ' console', 'ok');
-    setTimeout(() => tlog('BotShop@BotShop~ $ 等待指令...', 'info'), 500);
-}
+// 頁面載入：清空 Console，只顯示從 Supabase 拉的內容
 loadRecentLogs().then(() => { checkBotStatus(); startConsolePolling(); });
 setDot('offline');
 setTimeout(() => tlog('BotShop@BotShop~ $ 等待指令...', 'info'), 500);
