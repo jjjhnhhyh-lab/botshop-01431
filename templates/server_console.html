@@ -6,25 +6,42 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
 <style>
-*{box-sizing:border-box}
-body{margin:0;background:#0e1015;color:#e6e6e6;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;min-height:100vh}
-.topbar{display:flex;align-items:center;justify-content:space-between;padding:14px 24px;background:#16181f;border-bottom:1px solid #22252e}
-.server-name{font-size:1.1rem;font-weight:700}
-.power-buttons{display:flex;gap:8px}
-.pbtn{border:none;padding:10px 24px;border-radius:6px;font-size:.85rem;font-weight:600;color:white;cursor:pointer;transition:all .15s;font-family:inherit}
-.pbtn-start,.pbtn-restart{background:#4a5568}
-.pbtn-start:hover,.pbtn-restart:hover{background:#5a6578}
-.pbtn-stop{background:#e53e3e}
-.pbtn-stop:hover{background:#c53030}
+*{box-sizing:border-box;margin:0}
+body{background:#0e1015;color:#e6e6e6;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;min-height:100vh}
+.layout{display:flex;min-height:100vh}
+.sidebar{width:220px;background:#16181f;border-right:1px solid #22252e;display:flex;flex-direction:column;position:fixed;top:0;bottom:0;left:0}
+.sidebar .logo{padding:16px 20px;font-weight:700;font-size:1.02rem;border-bottom:1px solid #22252e;display:flex;align-items:center;gap:8px}
+.sidebar .logo a{color:#8890a8;text-decoration:none;font-size:0.85rem;font-weight:400;margin-right:4px}
+.sidebar .logo a:hover{color:white}
+.sidebar nav{flex:1;padding:10px 8px;overflow-y:auto}
+.sidebar .nav-item{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:6px;color:#b8bcc8;font-size:0.88rem;cursor:pointer;margin-bottom:2px;transition:all .15s}
+.sidebar .nav-item:hover{background:#1f222b;color:white}
+.sidebar .nav-item.active{background:#5865F2;color:white}
+.sidebar .nav-item svg{width:16px;height:16px;flex-shrink:0}
+.sidebar .section-label{padding:12px 12px 6px;font-size:0.68rem;color:#666;text-transform:uppercase;letter-spacing:0.06em}
+
+.main{margin-left:220px;flex:1;display:flex;flex-direction:column}
+.topbar{padding:12px 20px;background:#16181f;border-bottom:1px solid #22252e;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.topbar-left{display:flex;align-items:center;gap:10px}
+.dot{width:10px;height:10px;border-radius:50%;background:#666;transition:all .3s}
+.dot.starting{background:#f39c12;box-shadow:0 0 8px #f39c12;animation:pulse 1s ease-in-out infinite}
+.dot.running{background:#2ecc71;box-shadow:0 0 8px #2ecc71;animation:pulse 2s ease-in-out infinite}
+@keyframes pulse{50%{opacity:.5}}
+.state-text{font-size:0.88rem;color:#8890a8}
+.power-buttons{display:flex;gap:6px}
+.pbtn{border:none;padding:8px 18px;border-radius:6px;font-size:0.82rem;font-weight:700;color:white;cursor:pointer;transition:all .15s;font-family:inherit}
+.pbtn-start{background:#2ecc71}.pbtn-start:hover{background:#27ae60}
+.pbtn-restart{background:#f39c12}.pbtn-restart:hover{background:#e67e22}
+.pbtn-stop{background:#e74c3c}.pbtn-stop:hover{background:#c0392b}
+.pbtn-kill{background:#34495e}.pbtn-kill:hover{background:#2c3e50}
 .pbtn:disabled{opacity:.4;cursor:not-allowed}
-.tabs{display:flex;background:#0e1015;border-bottom:1px solid #22252e;padding:0 24px}
-.tab{padding:12px 20px;background:transparent;color:#8890a8;border:none;border-bottom:2px solid transparent;font-size:.9rem;font-weight:600;cursor:pointer;font-family:inherit}
-.tab.active{color:white;border-bottom-color:#5865F2}
-.panel{display:none}
+
+.panel{display:none;flex:1}
 .panel.active{display:block}
+
 .console-grid{display:grid;grid-template-columns:1fr 340px;border-bottom:1px solid #22252e}
-.console-left{display:flex;flex-direction:column;background:#000;height:500px;border-right:1px solid #22252e}
-.terminal{flex:1;padding:16px;overflow-y:auto;font-family:'SF Mono','Monaco','Consolas',monospace;font-size:.82rem;line-height:1.55;color:#c8c8c8}
+.console-left{display:flex;flex-direction:column;background:#000;height:520px;border-right:1px solid #22252e}
+.terminal{flex:1;padding:16px;overflow-y:auto;font-family:'SF Mono','Monaco','Consolas',monospace;font-size:0.82rem;line-height:1.55;color:#c8c8c8}
 .terminal::-webkit-scrollbar{width:8px}
 .terminal::-webkit-scrollbar-thumb{background:#222;border-radius:4px}
 .tline{word-break:break-all}
@@ -33,324 +50,38 @@ body{margin:0;background:#0e1015;color:#e6e6e6;font-family:-apple-system,BlinkMa
 .tline.warn{color:#f39c12}
 .tline.error{color:#e74c3c}
 .command-line{display:flex;align-items:center;background:#0a0a0a;border-top:1px solid #222;padding:10px 16px;gap:8px;font-family:'SF Mono','Monaco','Consolas',monospace}
-.command-line .prompt{color:#8890a8;font-size:.9rem}
-.command-line input{flex:1;background:transparent;border:none;color:#e6e6e6;font-size:.85rem;font-family:inherit;outline:none}
+.command-line .prompt{color:#8890a8;font-size:0.9rem}
+.command-line input{flex:1;background:transparent;border:none;color:#e6e6e6;font-size:0.85rem;font-family:inherit;outline:none}
 .command-line input::placeholder{color:#444}
-.info-area{display:flex;flex-direction:column;gap:12px;padding:16px;background:#0e1015;overflow-y:auto;height:500px}
+
+.info-area{display:flex;flex-direction:column;gap:12px;padding:16px;background:#0e1015;overflow-y:auto;height:520px}
 .info-card{display:flex;align-items:center;gap:14px;background:#16181f;border:1px solid #22252e;border-radius:10px;padding:14px 18px}
 .info-card .icon{width:40px;height:40px;border-radius:8px;background:#1f2230;display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0}
-.info-card .label{font-size:.72rem;color:#666;text-transform:uppercase;letter-spacing:.05em}
-.info-card .value{font-size:.95rem;font-weight:600;color:white;margin-top:2px}
+.info-card .label{font-size:0.7rem;color:#666;text-transform:uppercase;letter-spacing:0.05em}
+.info-card .value{font-size:0.95rem;font-weight:600;color:white;margin-top:2px}
+
 .charts{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;padding:16px}
 .chart-card{background:#16181f;border:1px solid #22252e;border-radius:10px;padding:16px}
-.chart-title{font-size:.75rem;color:#666;text-transform:uppercase;letter-spacing:.05em;margin-bottom:12px}
+.chart-title{font-size:0.72rem;color:#666;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:12px}
 .chart-card canvas{width:100%!important;height:120px!important}
+
+.empty-page{padding:60px 40px;text-align:center;color:#666}
+.empty-page .icon{font-size:4rem;margin-bottom:16px;opacity:.5}
+.empty-page h3{margin:0 0 8px;color:#e6e6e6}
+.empty-page p{margin:0;font-size:0.9rem}
+
+.files-wrap{padding:24px}
+.files-toolbar{display:flex;gap:12px;margin-bottom:20px}
+.btn-tool{border:none;padding:10px 20px;border-radius:8px;font-size:0.9rem;font-weight:600;color:white;cursor:pointer;font-family:inherit;transition:all .15s}
+.btn-newfolder{background:#5865F2}.btn-newfolder:hover{background:#4752c4}
+.btn-upload{background:#2ecc71}.btn-upload:hover{background:#27ae60}
+.file-row{display:grid;grid-template-columns:1fr 120px 80px;padding:14px 16px;border-bottom:1px solid #1a1d26;align-items:center}
+.file-row:hover{background:#16181f}
+.file-row .name{display:flex;align-items:center;gap:10px;color:white}
+.file-row .size{color:#8890a8;font-size:0.88rem}
+.file-row .actions button{background:transparent;border:none;color:#666;cursor:pointer;padding:4px 8px;border-radius:6px}
+.file-row .actions button:hover{color:#e74c3c;background:#2a1f22}
+.total{text-align:right;padding:16px;color:#8890a8;font-size:0.85rem}
 </style>
 </head>
 <body>
-
-<div class="topbar">
-    <div style="display:flex;align-items:center;gap:16px">
-        <a href="/dashboard" style="color:#8890a8;text-decoration:none;font-size:0.9rem">← 返回</a>
-        <div class="server-name">{{ server_name }}</div>
-    </div>
-    <div class="power-buttons">
-        <button class="pbtn pbtn-start" onclick="startServer()">Start</button>
-        <button class="pbtn pbtn-restart" onclick="restartServer()">Restart</button>
-        <button class="pbtn pbtn-stop" onclick="stopServer()">Stop</button>
-    </div>
-</div>
-
-<div class="tabs">
-    <button class="tab active" onclick="showTab('console', this)">Console</button>
-    <button class="tab" onclick="showTab('ai', this)">AI 助手</button>
-    <button class="tab" onclick="showTab('files', this)">放資料夾</button>
-</div>
-
-<div id="panel-console" class="panel active">
-    <div class="console-grid">
-        <div class="console-left">
-            <div class="terminal" id="terminal"></div>
-            <form class="command-line" onsubmit="sendCommand(event)">
-                <span class="prompt">&raquo;</span>
-                <input type="text" id="cmdInput" placeholder="Type a command..." autocomplete="off">
-            </form>
-        </div>
-        <div class="info-area">
-            <div class="info-card"><div class="icon">🕐</div><div><div class="label">Uptime</div><div class="value" id="uptime">0h 0m 0s</div></div></div>
-            <div class="info-card"><div class="icon">📊</div><div><div class="label">CPU Load</div><div class="value" id="cpuVal">0.00% / ∞</div></div></div>
-            <div class="info-card"><div class="icon">💾</div><div><div class="label">Memory</div><div class="value" id="memVal">0 MiB / 512 MiB</div></div></div>
-            <div class="info-card"><div class="icon">💿</div><div><div class="label">Disk</div><div class="value" id="diskVal">0 MiB / 10 GiB</div></div></div>
-            <div class="info-card"><div class="icon">⬇️</div><div><div class="label">Network (Inbound)</div><div class="value" id="netIn">0 B</div></div></div>
-            <div class="info-card"><div class="icon">⬆️</div><div><div class="label">Network (Outbound)</div><div class="value" id="netOut">0 B</div></div></div>
-        </div>
-    </div>
-    <div class="charts">
-        <div class="chart-card"><div class="chart-title">CPU Load</div><canvas id="cpuChart"></canvas></div>
-        <div class="chart-card"><div class="chart-title">Memory</div><canvas id="memChart"></canvas></div>
-        <div class="chart-card"><div class="chart-title">Network</div><canvas id="netChart"></canvas></div>
-    </div>
-</div>
-
-<div id="panel-ai" class="panel">
-    <div style="padding:40px 24px;text-align:center;color:#666">
-        <div style="font-size:4rem">🤖</div><h3>AI 助手</h3><p>功能開發中</p>
-    </div>
-</div>
-
-<div id="panel-files" class="panel">
-    <div style="padding:24px">
-        <div style="display:flex;gap:12px;margin-bottom:20px">
-            <button style="background:#5865F2;color:white;border:none;padding:10px 20px;border-radius:8px;cursor:pointer;font-weight:600" onclick="newFolder()">📁 新增資料夾</button>
-            <button style="background:#2ecc71;color:white;border:none;padding:10px 20px;border-radius:8px;cursor:pointer;font-weight:600" onclick="document.getElementById('fileInput').click()">📤 上傳檔案</button>
-            <input type="file" id="fileInput" style="display:none" onchange="handleUpload(event)">
-        </div>
-        <div id="fileList"></div>
-        <div id="totalSize" style="text-align:right;color:#8890a8;padding:16px;font-size:.85rem"></div>
-    </div>
-</div>
-
-<script>
-const SERVER_NAME = {{ server_name|tojson }};
-const STORAGE_KEY = 'botshop_files_' + SERVER_NAME;
-let running = false, uptimeSeconds = 0, uptimeTimer = null, statsTimer = null;
-
-function showTab(id, el) {
-    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
-    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-    document.getElementById('panel-' + id).classList.add('active');
-    el.classList.add('active');
-    if (id === 'files') renderFiles();
-}
-
-const term = document.getElementById('terminal');
-function tlog(text, cls = '') {
-    const d = document.createElement('div');
-    d.className = 'tline ' + cls;
-    d.textContent = text;
-    term.appendChild(d);
-    term.scrollTop = term.scrollHeight;
-}
-function tlogSeq(lines, classes, delay, onDone) {
-    let i = 0;
-    const t = setInterval(() => {
-        tlog(lines[i], classes[i] || '');
-        i++;
-        if (i >= lines.length) { clearInterval(t); if (onDone) onDone(); }
-    }, delay);
-}
-function setButtons(d) { document.querySelectorAll('.pbtn').forEach(b => b.disabled = d); }
-
-function fmtUptime(s) {
-    return Math.floor(s/3600) + 'h ' + Math.floor((s%3600)/60) + 'm ' + (s%60) + 's';
-}
-function startUptime() {
-    if (uptimeTimer) return;
-    uptimeSeconds = 0;
-    uptimeTimer = setInterval(() => {
-        uptimeSeconds++;
-        document.getElementById('uptime').textContent = fmtUptime(uptimeSeconds);
-    }, 1000);
-}
-function stopUptime() { if (uptimeTimer) { clearInterval(uptimeTimer); uptimeTimer = null; } }
-
-let cpuChart, memChart, netChart;
-function initCharts() {
-    const opts = {
-        responsive: true, maintainAspectRatio: false,
-        plugins: { legend: { display: false } },
-        scales: { x: { display: false }, y: { beginAtZero: true, grid: { color: '#1a1d26' }, ticks: { color: '#666', font: { size: 9 } } } },
-        animation: false,
-        elements: { line: { borderColor: '#00d9ff', borderWidth: 2, tension: 0.3 }, point: { radius: 0 } }
-    };
-    const mk = id => new Chart(document.getElementById(id), {
-        type: 'line',
-        data: { labels: Array(30).fill(''), datasets: [{ data: Array(30).fill(0), borderColor: '#00d9ff', backgroundColor: 'rgba(0,217,255,0.05)', fill: true }] },
-        options: opts
-    });
-    cpuChart = mk('cpuChart'); memChart = mk('memChart'); netChart = mk('netChart');
-}
-function push(c, v) { c.data.datasets[0].data.push(v); c.data.datasets[0].data.shift(); c.update('none'); }
-
-function startServer() {
-    if (running) return;
-    setButtons(true);
-    const files = getFiles();
-    if (files.length === 0) {
-        tlogSeq([
-            '[BotShop Daemon]: ---------- 正在拉取 Docker 容器映像檔 ----------',
-            '[BotShop Daemon]: 已完成拉取 Docker 容器映像檔',
-            '[BotShop Daemon]: ---------- 環境變數 ----------',
-            '[BotShop Daemon]: 更新伺服器資源',
-            'BotShop@BotShop~ $ Server marked as starting...',
-            "BotShop@BotShop~ $ bash -c 'cd /home/container && python3 bot.py'",
-            "python3: can't open file '/home/container/bot.py': [Errno 2] No such file or directory",
-            'BotShop@BotShop~ $ Server marked as offline...',
-            '[BotShop Daemon]: ---------- 偵測到伺服器處理程序處於當機狀態！ ----------',
-            '[BotShop Daemon]: 結束代碼：2',
-            '[BotShop Daemon]: 記憶體不足：false',
-            '[BotShop Daemon]: 已中止自動重新啟動，上一次當機發生在不到 60 秒之前。'
-        ], ['', '', '', '', 'info', 'info', 'error', 'error', 'error', 'error', 'error', 'error'], 500, () => {
-            setButtons(false);
-        });
-        return;
-    }
-    tlogSeq([
-        '[BotShop Daemon]: ---------- 正在拉取 Docker 容器映像檔 ----------',
-        '[BotShop Daemon]: 已完成拉取 Docker 容器映像檔',
-        '[BotShop Daemon]: ---------- 環境變數 ----------',
-        '[BotShop Daemon]: 更新伺服器資源',
-        'BotShop@BotShop~ $ Server marked as starting...',
-        "BotShop@BotShop~ $ bash -c 'cd /home/container && python3 bot.py'",
-        'Python 3.13.15',
-        'logged in as botshop (running)',
-        'BotShop@BotShop~ $ Server marked as running...'
-    ], ['', '', '', '', 'info', 'info', '', 'ok', 'ok'], 600, () => {
-        setButtons(false);
-        running = true;
-        startUptime();
-        startStats();
-    });
-}
-function stopServer() {
-    if (!running) return;
-    setButtons(true);
-    tlogSeq([
-        'BotShop@BotShop~ $ Server marked as stopping...',
-        '[BotShop Daemon]: 發送停止訊號 (SIGINT)',
-        '[BotShop Daemon]: 伺服器已停止',
-        'BotShop@BotShop~ $ Server marked as offline...'
-    ], ['warn', '', 'ok', 'ok'], 400, () => {
-        setButtons(false);
-        running = false;
-        stopUptime();
-        stopStats();
-        document.getElementById('uptime').textContent = '0h 0m 0s';
-        document.getElementById('cpuVal').textContent = '0.00% / ∞';
-        document.getElementById('memVal').textContent = '0 MiB / 512 MiB';
-        document.getElementById('netIn').textContent = '0 B';
-        document.getElementById('netOut').textContent = '0 B';
-    });
-}
-function restartServer() {
-    if (!running) { startServer(); return; }
-    setButtons(true);
-    stopStats();
-    stopUptime();
-    tlogSeq([
-        'BotShop@BotShop~ $ Server marked as restarting...',
-        '[BotShop Daemon]: 停止伺服器...',
-        '[BotShop Daemon]: 啟動伺服器...',
-        '[BotShop Daemon]: 更新伺服器資源',
-        "BotShop@BotShop~ $ bash -c 'cd /home/container && python3 bot.py'",
-        'BotShop@BotShop~ $ Server marked as running...'
-    ], ['warn', '', '', '', 'info', 'ok'], 500, () => {
-        setButtons(false);
-        uptimeSeconds = 0;
-        startUptime();
-        startStats();
-    });
-}
-
-
-
-function startStats() {
-    if (statsTimer) return;
-    statsTimer = setInterval(() => {
-        const cpu = Math.random() * 0.1;
-        const mem = 40 + Math.random() * 5;
-        const nIn = Math.random() * 50;
-        const nOut = Math.random() * 30;
-        document.getElementById('cpuVal').textContent = cpu.toFixed(2) + '% / ∞';
-        document.getElementById('memVal').textContent = mem.toFixed(2) + ' MiB / 512 MiB';
-        document.getElementById('diskVal').textContent = '36.76 MiB / 10 GiB';
-        document.getElementById('netIn').textContent = nIn.toFixed(2) + ' KiB';
-        document.getElementById('netOut').textContent = nOut.toFixed(2) + ' KiB';
-        push(cpuChart, cpu);
-        push(memChart, mem);
-        push(netChart, nIn + nOut);
-    }, 1000);
-}
-function stopStats() { if (statsTimer) { clearInterval(statsTimer); statsTimer = null; } }
-
-function sendCommand(e) {
-    e.preventDefault();
-    const input = document.getElementById('cmdInput');
-    const cmd = input.value.trim();
-    if (!cmd) return;
-    input.value = '';
-    tlog('> ' + cmd, 'cmd');
-    const c = cmd.split(/\s+/)[0].toLowerCase();
-    if (c === 'help') tlog('指令: help, ls, clear, whoami, date', 'info');
-    else if (c === 'ls') {
-        const files = getFiles();
-        if (!files.length) tlog('（空）', 'info');
-        else files.forEach(f => tlog('  ' + f.name, 'info'));
-    }
-    else if (c === 'clear') term.innerHTML = '';
-    else if (c === 'whoami') tlog('botshop', 'ok');
-    else if (c === 'date') tlog(new Date().toString(), 'info');
-    else tlog('command not found: ' + c, 'error');
-}
-
-function getFiles() {
-    try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); } catch(e) { return []; }
-}
-function saveFiles(a) { localStorage.setItem(STORAGE_KEY, JSON.stringify(a)); }
-function fmtSize(b) {
-    if (b < 1024) return b + ' B';
-    if (b < 1048576) return (b/1024).toFixed(1) + ' KB';
-    if (b < 1073741824) return (b/1048576).toFixed(1) + ' MB';
-    return (b/1073741824).toFixed(2) + ' GB';
-}
-function renderFiles() {
-    const list = document.getElementById('fileList');
-    const total = document.getElementById('totalSize');
-    const files = getFiles();
-    if (!files.length) {
-        list.innerHTML = '<div style="text-align:center;padding:60px;color:#666">還沒有任何檔案</div>';
-        total.textContent = '';
-        return;
-    }
-    list.innerHTML = files.map((f, i) => `
-        <div style="display:grid;grid-template-columns:1fr 120px 80px;padding:14px 16px;border-bottom:1px solid #1a1d26;align-items:center">
-            <div>${f.type === 'folder' ? '📁' : '📄'} ${f.name}</div>
-            <div style="color:#8890a8">${f.type === 'folder' ? '—' : fmtSize(f.size)}</div>
-            <div style="text-align:right"><button onclick="deleteFile(${i})" style="background:transparent;border:none;color:#666;cursor:pointer">✕</button></div>
-        </div>
-    `).join('');
-    const sum = files.reduce((s, f) => s + (f.size || 0), 0);
-    total.textContent = '共 ' + files.length + ' 個項目 · ' + fmtSize(sum);
-}
-function newFolder() {
-    const name = prompt('資料夾名稱：');
-    if (!name) return;
-    const files = getFiles();
-    files.push({ type: 'folder', name: name.trim(), size: 0 });
-    saveFiles(files);
-    renderFiles();
-}
-function handleUpload(e) {
-    const f = e.target.files[0];
-    if (!f) return;
-    const files = getFiles();
-    files.push({ type: 'file', name: f.name, size: f.size });
-    saveFiles(files);
-    renderFiles();
-    e.target.value = '';
-}
-function deleteFile(i) {
-    if (!confirm('刪除？')) return;
-    const files = getFiles();
-    files.splice(i, 1);
-    saveFiles(files);
-    renderFiles();
-}
-
-initCharts();
-tlog('Welcome to ' + SERVER_NAME + ' console', 'ok');
-setTimeout(() => tlog('BotShop@BotShop~ $ 等待指令...', 'info'), 500);
-</script>
-
-</body>
-</html>
