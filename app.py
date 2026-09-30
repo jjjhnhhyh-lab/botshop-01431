@@ -83,5 +83,36 @@ def server_console(name):
         return redirect(url_for("index"))
     return render_template("server_console.html", shop=SHOP_NAME, user=current_user(), server_name=name)
 
+
+
+@app.route("/api/server/<action>", methods=["POST"])
+def api_server_action(action):
+    if not current_user():
+        return jsonify(ok=False, msg="not logged in"), 401
+    if action not in ("start", "stop", "restart", "kill"):
+        return jsonify(ok=False, msg="invalid action"), 400
+    r = requests.post(
+        f"{URL}/rest/v1/server_jobs",
+        headers=_h("return=representation"),
+        json={"action": action, "status": "pending"}
+    )
+    if r.status_code not in (200, 201):
+        return jsonify(ok=False, msg="failed to create job"), 500
+    job = r.json()[0]
+    return jsonify(ok=True, job_id=job["id"])
+
+@app.route("/api/server/status/<int:job_id>")
+def api_job_status(job_id):
+    if not current_user():
+        return jsonify(ok=False), 401
+    r = requests.get(
+        f"{URL}/rest/v1/server_jobs",
+        headers=_h(),
+        params={"id": f"eq.{job_id}", "limit": 1}
+    )
+    if r.status_code != 200 or not r.json():
+        return jsonify(ok=False), 404
+    return jsonify(ok=True, job=r.json()[0])
+
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
