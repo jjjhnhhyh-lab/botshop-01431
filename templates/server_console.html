@@ -79,7 +79,21 @@ body{background:#0e1015;color:#e6e6e6;font-family:-apple-system,BlinkMacSystemFo
 .file-row .actions button{background:transparent;border:none;color:#666;cursor:pointer;padding:4px 8px;border-radius:6px}
 .file-row .actions button:hover{color:#e74c3c;background:#2a1f22}
 .total{text-align:right;padding:16px;color:#8890a8;font-size:.85rem}
+.code-layout{display:grid;grid-template-columns:240px 1fr;height:calc(100vh - 130px)}
+.code-sidebar{background:#0a0c12;border-right:1px solid #22252e;display:flex;flex-direction:column;overflow:hidden}
+.code-header{padding:12px 16px;border-bottom:1px solid #22252e;display:flex;justify-content:space-between;align-items:center;font-size:.9rem}
+.code-header .btn-tool{padding:4px 10px;font-size:.75rem;background:#5865F2;border:none;border-radius:6px;color:white;cursor:pointer;font-family:inherit}
+.code-file-list{flex:1;overflow-y:auto;padding:8px}
+.code-file-item{padding:8px 12px;border-radius:6px;cursor:pointer;color:#b8bcc8;font-size:.88rem;transition:all .15s;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.code-file-item:hover{background:#1f222b;color:white}
+.code-file-item.active{background:#5865F2;color:white}
+.code-main{display:flex;flex-direction:column;min-height:0}
+.editor-toolbar{padding:10px 16px;border-bottom:1px solid #22252e;background:#16181f;display:flex;justify-content:space-between;align-items:center;font-size:.88rem}
+.editor-toolbar #currentFileName{color:#8890a8}
+.editor-toolbar .btn-tool{padding:6px 16px;background:#2ecc71;border:none;border-radius:6px;color:white;cursor:pointer;font-family:inherit;font-size:.82rem;font-weight:600}
+.editor-toolbar .btn-tool:disabled{opacity:.4;cursor:not-allowed;background:#666}
 </style>
+<script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.45.0/min/vs/loader.js"></script>
 </head>
 <body>
 <div class="layout">
@@ -149,6 +163,25 @@ body{background:#0e1015;color:#e6e6e6;font-family:-apple-system,BlinkMacSystemFo
             </div>
         </div>
 
+        <div id="panel-code" class="panel">
+            <div class="code-layout">
+                <aside class="code-sidebar">
+                    <div class="code-header">
+                        <strong>檔案</strong>
+                        <button class="btn-tool" onclick="newCodeFile()">+ 新建</button>
+                    </div>
+                    <div id="codeFileList" class="code-file-list"></div>
+                </aside>
+                <main class="code-main">
+                    <div class="editor-toolbar">
+                        <span id="currentFileName">未開啟檔案</span>
+                        <button class="btn-tool" id="saveCodeBtn" onclick="saveCode()" disabled>💾 儲存</button>
+                    </div>
+                    <div id="monacoEditor" style="flex:1;min-height:0"></div>
+                </main>
+            </div>
+        </div>
+
         <!-- Files -->
         <div id="panel-files" class="panel">
             <div class="files-wrap">
@@ -176,6 +209,7 @@ function showPanel(id, el) {
     el.classList.add('active');
     if (id === 'files') renderFiles();
     if (id === 'console') document.getElementById('cmdInput').focus();
+    if (id === 'code') loadCodeFiles();
 }
 
 const term = document.getElementById('terminal');
