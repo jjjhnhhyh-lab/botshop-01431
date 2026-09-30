@@ -398,11 +398,6 @@ async function stopServer() {
     setDot('offline');
     stopUptime();
     stopStats();
-    if (icon && text) {
-        icon.textContent = '⏸️';
-        text.textContent = '已停止';
-        text.className = 'text stopped';
-    }
     document.getElementById('uptime').textContent = '0h 0m 0s';
     document.getElementById('cpuVal').textContent = '0.00% / ∞';
     document.getElementById('memVal').textContent = '0 MiB / 512 MiB';
