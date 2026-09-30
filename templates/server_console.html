@@ -508,7 +508,11 @@ async function sendCommand(e) {
     tlog('> ' + cmd, 'cmd');
 
     if (cmd === 'clear') { term.innerHTML = ''; return; }
-    if (cmd === 'help') { tlog('指令: clear, help', 'info'); return; }
+    if (cmd === 'help') {
+        tlog('本地: clear, help', 'info');
+        tlog('其他指令會送到 Pterodactyl（例如 ls, pip install xxx, python3 xxx.py）', 'info');
+        return;
+    }
 
     try {
         const res = await fetch('/api/server/command', {
@@ -518,8 +522,8 @@ async function sendCommand(e) {
         });
         const d = await res.json();
         if (!d.ok) { tlog('[Send] ❌ ' + (d.msg || '未知'), 'error'); return; }
-        tlog('[Send] 已送出指令，等待回應...', 'info');
-        pollCommandJob(d.job_id);
+        tlog('[Send] ✅ 已送出指令', 'ok');
+        pollJob(d.job_id, 'command');
     } catch(err) {
         tlog('[Send] ❌ ' + err, 'error');
     }
