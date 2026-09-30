@@ -172,74 +172,87 @@ function initCharts() {
 }
 function push(c, v) { c.data.datasets[0].data.push(v); c.data.datasets[0].data.shift(); c.update('none'); }
 
-async function startServer() {
+function startServer() {
     if (running) return;
     setButtons(true);
-    const res = await fetch('/api/server/start', {method: 'POST'});
-    const d = await res.json();
-    if (!d.ok) { alert('失敗：' + d.msg); setButtons(false); return; }
-    tlog('[BotShop Daemon]: ---------- 正在拉取 Docker 容器映像檔 ----------', '');
-    tlog('[BotShop Daemon]: 已完成拉取 Docker 容器映像檔', '');
-    tlog('[BotShop Daemon]: ---------- 環境變數 ----------', '');
-    tlog('[BotShop Daemon]: 更新伺服器資源', '');
-    tlog('BotShop@BotShop~ $ Server marked as starting...', 'info');
-    pollJob(d.job_id, 'start');
-}
-async function stopServer() {
-    if (!running) return;
-    setButtons(true);
-    const res = await fetch('/api/server/stop', {method: 'POST'});
-    const d = await res.json();
-    if (!d.ok) { alert('失敗：' + d.msg); setButtons(false); return; }
-    pollJob(d.job_id, 'stop');
-}
-async function restartServer() {
-    setButtons(true);
-    const res = await fetch('/api/server/restart', {method: 'POST'});
-    const d = await res.json();
-    if (!d.ok) { alert('失敗：' + d.msg); setButtons(false); return; }
-    tlog('BotShop@BotShop~ $ Server marked as restarting...', 'warn');
-    pollJob(d.job_id, 'restart');
-}
-
-
-async function pollJob(jobId, kind) {
-    const res = await fetch('/api/server/status/' + jobId);
-    const d = await res.json();
-    if (!d.ok) { setButtons(false); return; }
-    const j = d.job;
-    if (j.status === 'pending' || j.status === 'running') {
-        setTimeout(() => pollJob(jobId, kind), 1500);
+    const files = getFiles();
+    if (files.length === 0) {
+        tlogSeq([
+            '[BotShop Daemon]: ---------- 正在拉取 Docker 容器映像檔 ----------',
+            '[BotShop Daemon]: 已完成拉取 Docker 容器映像檔',
+            '[BotShop Daemon]: ---------- 環境變數 ----------',
+            '[BotShop Daemon]: 更新伺服器資源',
+            'BotShop@BotShop~ $ Server marked as starting...',
+            "BotShop@BotShop~ $ bash -c 'cd /home/container && python3 bot.py'",
+            "python3: can't open file '/home/container/bot.py': [Errno 2] No such file or directory",
+            'BotShop@BotShop~ $ Server marked as offline...',
+            '[BotShop Daemon]: ---------- 偵測到伺服器處理程序處於當機狀態！ ----------',
+            '[BotShop Daemon]: 結束代碼：2',
+            '[BotShop Daemon]: 記憶體不足：false',
+            '[BotShop Daemon]: 已中止自動重新啟動，上一次當機發生在不到 60 秒之前。'
+        ], ['', '', '', '', 'info', 'info', 'error', 'error', 'error', 'error', 'error', 'error'], 500, () => {
+            setButtons(false);
+        });
         return;
     }
-    if (j.status === 'done') {
-        if (kind === 'start' || kind === 'restart') {
-            tlog('Python 3.13.15', '');
-            tlog('logged in as botshop (running)', 'ok');
-            tlog('BotShop@BotShop~ $ Server marked as running...', 'ok');
-            running = true;
-            startUptime();
-            startStats();
-        } else if (kind === 'stop') {
-            tlog('[BotShop Daemon]: 伺服器已停止', 'ok');
-            tlog('BotShop@BotShop~ $ Server marked as offline...', 'ok');
-            running = false;
-            stopUptime();
-            stopStats();
-            document.getElementById('uptime').textContent = '0h 0m 0s';
-            document.getElementById('cpuVal').textContent = '0.00% / ∞';
-            document.getElementById('memVal').textContent = '0 MiB / 512 MiB';
-            document.getElementById('netIn').textContent = '0 B';
-            document.getElementById('netOut').textContent = '0 B';
-        }
-    } else {
-        tlog("python3: can't open file '/home/container/bot.py': [Errno 2] No such file or directory", 'error');
-        tlog('BotShop@BotShop~ $ Server marked as offline...', 'error');
-        tlog('[BotShop Daemon]: 結束代碼：2', 'error');
-        running = false;
-    }
-    setButtons(false);
+    tlogSeq([
+        '[BotShop Daemon]: ---------- 正在拉取 Docker 容器映像檔 ----------',
+        '[BotShop Daemon]: 已完成拉取 Docker 容器映像檔',
+        '[BotShop Daemon]: ---------- 環境變數 ----------',
+        '[BotShop Daemon]: 更新伺服器資源',
+        'BotShop@BotShop~ $ Server marked as starting...',
+        "BotShop@BotShop~ $ bash -c 'cd /home/container && python3 bot.py'",
+        'Python 3.13.15',
+        'logged in as botshop (running)',
+        'BotShop@BotShop~ $ Server marked as running...'
+    ], ['', '', '', '', 'info', 'info', '', 'ok', 'ok'], 600, () => {
+        setButtons(false);
+        running = true;
+        startUptime();
+        startStats();
+    });
 }
+function stopServer() {
+    if (!running) return;
+    setButtons(true);
+    tlogSeq([
+        'BotShop@BotShop~ $ Server marked as stopping...',
+        '[BotShop Daemon]: 發送停止訊號 (SIGINT)',
+        '[BotShop Daemon]: 伺服器已停止',
+        'BotShop@BotShop~ $ Server marked as offline...'
+    ], ['warn', '', 'ok', 'ok'], 400, () => {
+        setButtons(false);
+        running = false;
+        stopUptime();
+        stopStats();
+        document.getElementById('uptime').textContent = '0h 0m 0s';
+        document.getElementById('cpuVal').textContent = '0.00% / ∞';
+        document.getElementById('memVal').textContent = '0 MiB / 512 MiB';
+        document.getElementById('netIn').textContent = '0 B';
+        document.getElementById('netOut').textContent = '0 B';
+    });
+}
+function restartServer() {
+    if (!running) { startServer(); return; }
+    setButtons(true);
+    stopStats();
+    stopUptime();
+    tlogSeq([
+        'BotShop@BotShop~ $ Server marked as restarting...',
+        '[BotShop Daemon]: 停止伺服器...',
+        '[BotShop Daemon]: 啟動伺服器...',
+        '[BotShop Daemon]: 更新伺服器資源',
+        "BotShop@BotShop~ $ bash -c 'cd /home/container && python3 bot.py'",
+        'BotShop@BotShop~ $ Server marked as running...'
+    ], ['warn', '', '', '', 'info', 'ok'], 500, () => {
+        setButtons(false);
+        uptimeSeconds = 0;
+        startUptime();
+        startStats();
+    });
+}
+
+
 
 function startStats() {
     if (statsTimer) return;
