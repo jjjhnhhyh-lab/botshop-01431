@@ -219,7 +219,30 @@ function tlog(text, cls) {
     d.className = 'tline ' + (cls || '');
     d.textContent = text;
     term.appendChild(d);
+    while (term.children.length > 500) {
+        term.removeChild(term.firstChild);
+    }
     term.scrollTop = term.scrollHeight;
+    // 存 localStorage
+    try {
+        const saved = JSON.parse(localStorage.getItem('botshop_console') || '[]');
+        saved.push({text, cls});
+        if (saved.length > 500) saved.splice(0, saved.length - 500);
+        localStorage.setItem('botshop_console', JSON.stringify(saved));
+    } catch(e) {}
+}
+
+function restoreConsole() {
+    try {
+        const saved = JSON.parse(localStorage.getItem('botshop_console') || '[]');
+        for (const item of saved) {
+            const d = document.createElement('div');
+            d.className = 'tline ' + (item.cls || '');
+            d.textContent = item.text;
+            term.appendChild(d);
+        }
+        if (saved.length) term.scrollTop = term.scrollHeight;
+    } catch(e) {}
 }
 function tlogSeq(lines, classes, delay, onDone) {
     let i = 0;
@@ -639,7 +662,6 @@ function deleteFile(i) {
 initCharts();
 restoreConsole();
 loadRecentLogs().then(() => startConsolePolling());
-startConsolePolling();
 setDot('offline');
 tlog('Welcome to ' + SERVER_NAME + ' console', 'ok');
 setTimeout(() => tlog('BotShop@BotShop~ $ 等待指令...', 'info'), 500);
