@@ -278,6 +278,12 @@ function pushData(c, v) { c.data.datasets[0].data.push(v); c.data.datasets[0].da
 let lastLogId = 0;
 let consolePolling = null;
 
+function stripAnsi(str) {
+    return str.replace(/\x1b\[[0-9;]*m/g, '');
+}
+
+let lastLine = '';
+
 function startConsolePolling() {
     if (consolePolling) return;
     consolePolling = setInterval(async () => {
@@ -286,7 +292,13 @@ function startConsolePolling() {
             const d = await res.json();
             if (!d.ok) return;
             for (const row of d.lines) {
-                tlog(row.line);
+                let line = stripAnsi(row.line);
+                if (line === lastLine) {
+                    lastLogId = Math.max(lastLogId, row.id);
+                    continue;
+                }
+                tlog(line);
+                lastLine = line;
                 lastLogId = Math.max(lastLogId, row.id);
             }
         } catch(e) {}

@@ -3,16 +3,14 @@ import subprocess, os, glob, time, sys, threading
 WATCH_DIR = "/home/container/bots"
 processes = {}
 
+
 def scan():
-    for f in sorted(glob.glob(f"{WATCH_DIR}/*.py")):
-        name = os.path.basename(f)
-        if name not in processes or processes[name].poll() is not None:
-            try:
-                p = subprocess.Popen(["python3", "-u", f])
-                processes[name] = p
-                print(f"[Scheduler] 啟動 {name} (PID {p.pid})", flush=True)
-            except Exception as e:
-                print(f"[Scheduler] 錯誤: {e}", flush=True)
+    # 只清理已停止的進程，不自動啟動
+    for name in list(processes.keys()):
+        p = processes.get(name)
+        if p is not None and p.poll() is not None:
+            print(f"[Scheduler] {name} 已停止 (exit {p.poll()})", flush=True)
+            del processes[name]
 
 def handle_command(cmd):
     cmd = cmd.strip()
