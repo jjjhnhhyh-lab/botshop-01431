@@ -311,9 +311,18 @@ function startConsolePolling() {
                 let line = stripAnsi(row.line);
                 lastLogId = Math.max(lastLogId, row.id);
                 if (shouldSkip(line)) continue;
-if (line === lastLine) continue;
+                if (line === lastLine) continue;
                 tlog(line);
                 lastLine = line;
+
+                // 偵測機器人啟動成功
+                const m = line.match(/已登录[:：]\s*(.+)/);
+                if (m) {
+                    tlog('✅ 已啟動：' + m[1].trim(), 'ok');
+                }
+                if (line.includes('已停止')) {
+                    tlog('⏸️ 機器人已停止', 'warn');
+                }
             }
         } catch(e) {}
     }, 2000);
