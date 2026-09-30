@@ -9,6 +9,30 @@ app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", "dev")
 URL = os.environ["SUPABASE_URL"].rstrip("/")
 KEY = os.environ["SUPABASE_KEY"]
+
+def _h(prefer=None):
+    h = {"apikey": KEY, "Authorization": f"Bearer {KEY}", "Content-Type": "application/json"}
+    if prefer: h["Prefer"] = prefer
+    return h
+
+def q(table, params):
+    r = requests.get(f"{URL}/rest/v1/{table}", headers=_h(), params=params, timeout=15)
+    r.raise_for_status()
+    return r.json()
+
+def q1(table, params):
+    rows = q(table, params)
+    return rows[0] if rows else None
+
+def ex(method, table, params=None, json=None):
+    fn = {"post": requests.post, "patch": requests.patch, "delete": requests.delete}[method]
+    kw = {"headers": _h("return=representation")}
+    if params: kw["params"] = params
+    if json: kw["json"] = json
+    r = fn(f"{URL}/rest/v1/{table}", **kw, timeout=15)
+    r.raise_for_status()
+    return r
+
 DC_CLIENT_ID     = os.environ.get("DISCORD_CLIENT_ID", "")
 DC_CLIENT_SECRET = os.environ.get("DISCORD_CLIENT_SECRET", "")
 DC_REDIRECT_URI  = os.environ.get("DISCORD_REDIRECT_URI",
