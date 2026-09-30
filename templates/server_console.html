@@ -307,7 +307,7 @@ async function loadRecentLogs() {
         const d = await res.json();
         if (!d.ok) return;
         // 取最後 50 筆
-        const lines = d.lines.slice(-50);
+        const lines = d.lines.slice(-500);
         for (const row of lines) {
             let line = stripAnsi(row.line);
             lastLogId = Math.max(lastLogId, row.id);
