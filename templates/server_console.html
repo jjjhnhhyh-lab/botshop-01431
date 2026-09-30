@@ -93,11 +93,6 @@ body{background:#0e1015;color:#e6e6e6;font-family:-apple-system,BlinkMacSystemFo
 .editor-toolbar .btn-tool{padding:6px 16px;background:#2ecc71;border:none;border-radius:6px;color:white;cursor:pointer;font-family:inherit;font-size:.82rem;font-weight:600}
 .editor-toolbar .btn-tool:disabled{opacity:.4;cursor:not-allowed;background:#666}
 
-.bot-status{display:flex;align-items:center;gap:10px;padding:12px 20px;background:#16181f;border-bottom:1px solid #22252e;font-size:0.9rem}
-.bot-status .icon{font-size:1.2rem}
-.bot-status .text{color:#8890a8}
-.bot-status .text.active{color:#2ecc71;font-weight:600}
-.bot-status .text.stopped{color:#e74c3c}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.45.0/min/vs/loader.js"></script>
 </head>
@@ -138,10 +133,6 @@ body{background:#0e1015;color:#e6e6e6;font-family:-apple-system,BlinkMacSystemFo
         <div id="panel-console" class="panel active">
             <div class="console-grid">
                 <div class="console-left">
-                    <div class="bot-status">
-                        <span class="icon" id="botStatusIcon">⏳</span>
-                        <span class="text" id="botStatusText">等待啟動...</span>
-                    </div>
                     <div class="terminal" id="terminal"></div>
                     <form class="command-line" onsubmit="sendCommand(event); return false;">
                         <span class="prompt">&raquo;</span>
@@ -320,29 +311,7 @@ function startConsolePolling() {
                 let line = stripAnsi(row.line);
                 lastLogId = Math.max(lastLogId, row.id);
                 if (shouldSkip(line)) continue;
-
-                // 檢測機器人啟動/停止
-                const mStart = line.match(/已登录[:：]\s*(.+)/);
-                if (mStart) {
-                    const icon = document.getElementById('botStatusIcon');
-                    const text = document.getElementById('botStatusText');
-                    if (icon && text) {
-                        icon.textContent = '✅';
-                        text.textContent = '已啟動：' + mStart[1].trim();
-                        text.className = 'text active';
-                    }
-                }
-                if (line.includes('已停止')) {
-                    const icon = document.getElementById('botStatusIcon');
-                    const text = document.getElementById('botStatusText');
-                    if (icon && text) {
-                        icon.textContent = '⏸️';
-                        text.textContent = '已停止';
-                        text.className = 'text stopped';
-                    }
-                }
-
-                if (line === lastLine) continue;
+if (line === lastLine) continue;
                 tlog(line);
                 lastLine = line;
             }
@@ -420,8 +389,6 @@ async function stopServer() {
     setDot('offline');
     stopUptime();
     stopStats();
-    const icon = document.getElementById('botStatusIcon');
-    const text = document.getElementById('botStatusText');
     if (icon && text) {
         icon.textContent = '⏸️';
         text.textContent = '已停止';
