@@ -7,41 +7,39 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
 <style>
 *{box-sizing:border-box;margin:0}
-body{background:#0e1015;color:#e6e6e6;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;min-height:100vh}
+body{background:#0e1015;color:#e6e6e6;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
 .layout{display:flex;min-height:100vh}
-.sidebar{width:220px;background:#16181f;border-right:1px solid #22252e;display:flex;flex-direction:column;position:fixed;top:0;bottom:0;left:0}
+.sidebar{width:220px;background:#16181f;border-right:1px solid #22252e;display:flex;flex-direction:column;position:fixed;top:0;bottom:0;left:0;z-index:10}
 .sidebar .logo{padding:16px 20px;font-weight:700;font-size:1.02rem;border-bottom:1px solid #22252e;display:flex;align-items:center;gap:8px}
-.sidebar .logo a{color:#8890a8;text-decoration:none;font-size:0.85rem;font-weight:400;margin-right:4px}
+.sidebar .logo a{color:#8890a8;text-decoration:none;font-size:.85rem}
 .sidebar .logo a:hover{color:white}
 .sidebar nav{flex:1;padding:10px 8px;overflow-y:auto}
-.sidebar .nav-item{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:6px;color:#b8bcc8;font-size:0.88rem;cursor:pointer;margin-bottom:2px;transition:all .15s}
-.sidebar .nav-item:hover{background:#1f222b;color:white}
-.sidebar .nav-item.active{background:#5865F2;color:white}
-.sidebar .nav-item svg{width:16px;height:16px;flex-shrink:0}
-.sidebar .section-label{padding:12px 12px 6px;font-size:0.68rem;color:#666;text-transform:uppercase;letter-spacing:0.06em}
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:6px;color:#b8bcc8;font-size:.88rem;cursor:pointer;margin-bottom:2px;transition:all .15s}
+.nav-item:hover{background:#1f222b;color:white}
+.nav-item.active{background:#5865F2;color:white}
+.nav-item svg{width:16px;height:16px;flex-shrink:0}
 
 .main{margin-left:220px;flex:1;display:flex;flex-direction:column}
 .topbar{padding:12px 20px;background:#16181f;border-bottom:1px solid #22252e;display:flex;align-items:center;justify-content:space-between;gap:12px}
 .topbar-left{display:flex;align-items:center;gap:10px}
-.dot{width:10px;height:10px;border-radius:50%;background:#666;transition:all .3s}
-.dot.starting{background:#f39c12;box-shadow:0 0 8px #f39c12;animation:pulse 1s ease-in-out infinite}
-.dot.running{background:#2ecc71;box-shadow:0 0 8px #2ecc71;animation:pulse 2s ease-in-out infinite}
+.dot{width:10px;height:10px;border-radius:50%;background:#666}
+.dot.starting{background:#f39c12;box-shadow:0 0 8px #f39c12;animation:pulse 1s infinite}
+.dot.running{background:#2ecc71;box-shadow:0 0 8px #2ecc71;animation:pulse 2s infinite}
 @keyframes pulse{50%{opacity:.5}}
-.state-text{font-size:0.88rem;color:#8890a8}
+.state-text{font-size:.88rem;color:#8890a8}
 .power-buttons{display:flex;gap:6px}
-.pbtn{border:none;padding:8px 18px;border-radius:6px;font-size:0.82rem;font-weight:700;color:white;cursor:pointer;transition:all .15s;font-family:inherit}
+.pbtn{border:none;padding:8px 18px;border-radius:6px;font-size:.82rem;font-weight:700;color:white;cursor:pointer;font-family:inherit;transition:all .15s}
 .pbtn-start{background:#2ecc71}.pbtn-start:hover{background:#27ae60}
 .pbtn-restart{background:#f39c12}.pbtn-restart:hover{background:#e67e22}
 .pbtn-stop{background:#e74c3c}.pbtn-stop:hover{background:#c0392b}
-.pbtn-kill{background:#34495e}.pbtn-kill:hover{background:#2c3e50}
 .pbtn:disabled{opacity:.4;cursor:not-allowed}
 
-.panel{display:none;flex:1}
+.panel{display:none}
 .panel.active{display:block}
 
 .console-grid{display:grid;grid-template-columns:1fr 340px;border-bottom:1px solid #22252e}
 .console-left{display:flex;flex-direction:column;background:#000;height:520px;border-right:1px solid #22252e}
-.terminal{flex:1;padding:16px;overflow-y:auto;font-family:'SF Mono','Monaco','Consolas',monospace;font-size:0.82rem;line-height:1.55;color:#c8c8c8}
+.terminal{flex:1;padding:16px;overflow-y:auto;font-family:'SF Mono','Monaco','Consolas',monospace;font-size:.82rem;line-height:1.55;color:#c8c8c8}
 .terminal::-webkit-scrollbar{width:8px}
 .terminal::-webkit-scrollbar-thumb{background:#222;border-radius:4px}
 .tline{word-break:break-all}
@@ -50,38 +48,363 @@ body{background:#0e1015;color:#e6e6e6;font-family:-apple-system,BlinkMacSystemFo
 .tline.warn{color:#f39c12}
 .tline.error{color:#e74c3c}
 .command-line{display:flex;align-items:center;background:#0a0a0a;border-top:1px solid #222;padding:10px 16px;gap:8px;font-family:'SF Mono','Monaco','Consolas',monospace}
-.command-line .prompt{color:#8890a8;font-size:0.9rem}
-.command-line input{flex:1;background:transparent;border:none;color:#e6e6e6;font-size:0.85rem;font-family:inherit;outline:none}
+.command-line .prompt{color:#8890a8;font-size:.9rem}
+.command-line input{flex:1;background:transparent;border:none;color:#e6e6e6;font-size:.85rem;font-family:inherit;outline:none}
 .command-line input::placeholder{color:#444}
 
 .info-area{display:flex;flex-direction:column;gap:12px;padding:16px;background:#0e1015;overflow-y:auto;height:520px}
 .info-card{display:flex;align-items:center;gap:14px;background:#16181f;border:1px solid #22252e;border-radius:10px;padding:14px 18px}
 .info-card .icon{width:40px;height:40px;border-radius:8px;background:#1f2230;display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0}
-.info-card .label{font-size:0.7rem;color:#666;text-transform:uppercase;letter-spacing:0.05em}
-.info-card .value{font-size:0.95rem;font-weight:600;color:white;margin-top:2px}
+.info-card .label{font-size:.7rem;color:#666;text-transform:uppercase;letter-spacing:.05em}
+.info-card .value{font-size:.95rem;font-weight:600;color:white;margin-top:2px}
 
 .charts{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;padding:16px}
 .chart-card{background:#16181f;border:1px solid #22252e;border-radius:10px;padding:16px}
-.chart-title{font-size:0.72rem;color:#666;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:12px}
+.chart-title{font-size:.72rem;color:#666;text-transform:uppercase;letter-spacing:.05em;margin-bottom:12px}
 .chart-card canvas{width:100%!important;height:120px!important}
 
 .empty-page{padding:60px 40px;text-align:center;color:#666}
 .empty-page .icon{font-size:4rem;margin-bottom:16px;opacity:.5}
 .empty-page h3{margin:0 0 8px;color:#e6e6e6}
-.empty-page p{margin:0;font-size:0.9rem}
 
 .files-wrap{padding:24px}
 .files-toolbar{display:flex;gap:12px;margin-bottom:20px}
-.btn-tool{border:none;padding:10px 20px;border-radius:8px;font-size:0.9rem;font-weight:600;color:white;cursor:pointer;font-family:inherit;transition:all .15s}
+.btn-tool{border:none;padding:10px 20px;border-radius:8px;font-size:.9rem;font-weight:600;color:white;cursor:pointer;font-family:inherit}
 .btn-newfolder{background:#5865F2}.btn-newfolder:hover{background:#4752c4}
 .btn-upload{background:#2ecc71}.btn-upload:hover{background:#27ae60}
 .file-row{display:grid;grid-template-columns:1fr 120px 80px;padding:14px 16px;border-bottom:1px solid #1a1d26;align-items:center}
 .file-row:hover{background:#16181f}
 .file-row .name{display:flex;align-items:center;gap:10px;color:white}
-.file-row .size{color:#8890a8;font-size:0.88rem}
+.file-row .size{color:#8890a8;font-size:.88rem}
 .file-row .actions button{background:transparent;border:none;color:#666;cursor:pointer;padding:4px 8px;border-radius:6px}
 .file-row .actions button:hover{color:#e74c3c;background:#2a1f22}
-.total{text-align:right;padding:16px;color:#8890a8;font-size:0.85rem}
+.total{text-align:right;padding:16px;color:#8890a8;font-size:.85rem}
 </style>
 </head>
 <body>
+<div class="layout">
+    <aside class="sidebar">
+        <div class="logo"><a href="/dashboard">←</a> {{ server_name }}</div>
+        <nav>
+            <div class="nav-item active" onclick="showPanel('console', this)">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
+                Console
+            </div>
+            <div class="nav-item" onclick="showPanel('ai', this)">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 2"/></svg>
+                AI 助手
+            </div>
+            <div class="nav-item" onclick="showPanel('files', this)">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+                放資料夾
+            </div>
+        </nav>
+    </aside>
+
+    <main class="main">
+        <div class="topbar">
+            <div class="topbar-left">
+                <span class="dot" id="statusDot"></span>
+                <span class="state-text" id="stateText">離線</span>
+            </div>
+            <div class="power-buttons">
+                <button class="pbtn pbtn-start" onclick="startServer()">Start</button>
+                <button class="pbtn pbtn-restart" onclick="restartServer()">Restart</button>
+                <button class="pbtn pbtn-stop" onclick="stopServer()">Stop</button>
+            </div>
+        </div>
+
+        <!-- Console -->
+        <div id="panel-console" class="panel active">
+            <div class="console-grid">
+                <div class="console-left">
+                    <div class="terminal" id="terminal"></div>
+                    <form class="command-line" onsubmit="sendCommand(event); return false;">
+                        <span class="prompt">&raquo;</span>
+                        <input type="text" id="cmdInput" placeholder="Type a command..." autocomplete="off">
+                    </form>
+                </div>
+                <div class="info-area">
+                    <div class="info-card"><div class="icon">🕐</div><div><div class="label">Uptime</div><div class="value" id="uptime">0h 0m 0s</div></div></div>
+                    <div class="info-card"><div class="icon">📊</div><div><div class="label">CPU Load</div><div class="value" id="cpuVal">0.00% / ∞</div></div></div>
+                    <div class="info-card"><div class="icon">💾</div><div><div class="label">Memory</div><div class="value" id="memVal">0 MiB / 512 MiB</div></div></div>
+                    <div class="info-card"><div class="icon">💿</div><div><div class="label">Disk</div><div class="value" id="diskVal">0 MiB / 10 GiB</div></div></div>
+                    <div class="info-card"><div class="icon">⬇️</div><div><div class="label">Network (Inbound)</div><div class="value" id="netIn">0 B</div></div></div>
+                    <div class="info-card"><div class="icon">⬆️</div><div><div class="label">Network (Outbound)</div><div class="value" id="netOut">0 B</div></div></div>
+                </div>
+            </div>
+            <div class="charts">
+                <div class="chart-card"><div class="chart-title">CPU Load</div><canvas id="cpuChart"></canvas></div>
+                <div class="chart-card"><div class="chart-title">Memory</div><canvas id="memChart"></canvas></div>
+                <div class="chart-card"><div class="chart-title">Network</div><canvas id="netChart"></canvas></div>
+            </div>
+        </div>
+
+        <!-- AI -->
+        <div id="panel-ai" class="panel">
+            <div class="empty-page">
+                <div class="icon">🤖</div>
+                <h3>AI 助手</h3>
+                <p>功能開發中</p>
+            </div>
+        </div>
+
+        <!-- Files -->
+        <div id="panel-files" class="panel">
+            <div class="files-wrap">
+                <div class="files-toolbar">
+                    <button class="btn-tool btn-newfolder" onclick="newFolder()">📁 新增資料夾</button>
+                    <button class="btn-tool btn-upload" onclick="document.getElementById('fileInput').click()">📤 上傳檔案</button>
+                    <input type="file" id="fileInput" style="display:none" onchange="handleUpload(event)">
+                </div>
+                <div id="fileList"></div>
+                <div class="total" id="totalSize"></div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<script>
+const SERVER_NAME = {{ server_name|tojson }};
+const STORAGE_KEY = 'botshop_files_' + SERVER_NAME;
+let running = false, uptimeSeconds = 0, uptimeTimer = null, statsTimer = null;
+
+function showPanel(id, el) {
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    document.getElementById('panel-' + id).classList.add('active');
+    el.classList.add('active');
+    if (id === 'files') renderFiles();
+    if (id === 'console') document.getElementById('cmdInput').focus();
+}
+
+const term = document.getElementById('terminal');
+function tlog(text, cls) {
+    const d = document.createElement('div');
+    d.className = 'tline ' + (cls || '');
+    d.textContent = text;
+    term.appendChild(d);
+    term.scrollTop = term.scrollHeight;
+}
+function tlogSeq(lines, classes, delay, onDone) {
+    let i = 0;
+    const t = setInterval(() => {
+        tlog(lines[i], classes[i] || '');
+        i++;
+        if (i >= lines.length) { clearInterval(t); if (onDone) onDone(); }
+    }, delay);
+}
+function setButtons(d) { document.querySelectorAll('.pbtn').forEach(b => b.disabled = d); }
+function setDot(state) {
+    const dot = document.getElementById('statusDot');
+    const txt = document.getElementById('stateText');
+    if (!dot) return;
+    dot.classList.remove('offline', 'starting', 'running');
+    dot.classList.add(state);
+    txt.textContent = state === 'running' ? '線上' : state === 'starting' ? '啟動中' : '離線';
+}
+
+function fmtUptime(s) {
+    return Math.floor(s/3600) + 'h ' + Math.floor((s%3600)/60) + 'm ' + (s%60) + 's';
+}
+function startUptime() {
+    if (uptimeTimer) return;
+    uptimeSeconds = 0;
+    uptimeTimer = setInterval(() => {
+        uptimeSeconds++;
+        document.getElementById('uptime').textContent = fmtUptime(uptimeSeconds);
+    }, 1000);
+}
+function stopUptime() { if (uptimeTimer) { clearInterval(uptimeTimer); uptimeTimer = null; } }
+
+let cpuChart, memChart, netChart;
+function initCharts() {
+    const opts = {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: { x: { display: false }, y: { beginAtZero: true, grid: { color: '#1a1d26' }, ticks: { color: '#666', font: { size: 9 } } } },
+        animation: false,
+        elements: { line: { borderColor: '#00d9ff', borderWidth: 2, tension: 0.3 }, point: { radius: 0 } }
+    };
+    const mk = id => new Chart(document.getElementById(id), {
+        type: 'line',
+        data: { labels: Array(30).fill(''), datasets: [{ data: Array(30).fill(0), borderColor: '#00d9ff', backgroundColor: 'rgba(0,217,255,0.05)', fill: true }] },
+        options: opts
+    });
+    cpuChart = mk('cpuChart'); memChart = mk('memChart'); netChart = mk('netChart');
+}
+function pushData(c, v) { c.data.datasets[0].data.push(v); c.data.datasets[0].data.shift(); c.update('none'); }
+
+function startStats() {
+    if (statsTimer) return;
+    statsTimer = setInterval(() => {
+        const cpu = Math.random() * 0.1;
+        const mem = 40 + Math.random() * 5;
+        const nIn = Math.random() * 50;
+        const nOut = Math.random() * 30;
+        document.getElementById('cpuVal').textContent = cpu.toFixed(2) + '% / ∞';
+        document.getElementById('memVal').textContent = mem.toFixed(2) + ' MiB / 512 MiB';
+        document.getElementById('diskVal').textContent = '36.76 MiB / 10 GiB';
+        document.getElementById('netIn').textContent = nIn.toFixed(2) + ' KiB';
+        document.getElementById('netOut').textContent = nOut.toFixed(2) + ' KiB';
+        pushData(cpuChart, cpu);
+        pushData(memChart, mem);
+        pushData(netChart, nIn + nOut);
+    }, 1000);
+}
+function stopStats() { if (statsTimer) { clearInterval(statsTimer); statsTimer = null; } }
+
+async function startServer() {
+    if (running) return;
+    setButtons(true);
+    setDot('starting');
+    try {
+        const res = await fetch('/api/server/start', {method: 'POST'});
+        const d = await res.json();
+        if (!d.ok) { alert('失敗：' + (d.msg || '未知')); setButtons(false); setDot('offline'); return; }
+        tlog('[BotShop Daemon]: ---------- 正在拉取 Docker 容器映像檔 ----------', '');
+        tlog('[BotShop Daemon]: 已完成拉取 Docker 容器映像檔', '');
+        tlog('[BotShop Daemon]: ---------- 環境變數 ----------', '');
+        tlog('[BotShop Daemon]: 更新伺服器資源', '');
+        tlog('BotShop@BotShop~ $ Server marked as starting...', 'info');
+        pollJob(d.job_id, 'start');
+    } catch(e) {
+        alert('錯誤：' + e);
+        setButtons(false);
+        setDot('offline');
+    }
+}
+async function stopServer() {
+    if (!running) return;
+    setButtons(true);
+    try {
+        const res = await fetch('/api/server/stop', {method: 'POST'});
+        const d = await res.json();
+        if (!d.ok) { alert('失敗：' + (d.msg || '未知')); setButtons(false); return; }
+        tlog('BotShop@BotShop~ $ Server marked as stopping...', 'warn');
+        pollJob(d.job_id, 'stop');
+    } catch(e) { alert('錯誤：' + e); setButtons(false); }
+}
+async function restartServer() {
+    setButtons(true);
+    try {
+        const res = await fetch('/api/server/restart', {method: 'POST'});
+        const d = await res.json();
+        if (!d.ok) { alert('失敗：' + (d.msg || '未知')); setButtons(false); return; }
+        tlog('BotShop@BotShop~ $ Server marked as restarting...', 'warn');
+        pollJob(d.job_id, 'restart');
+    } catch(e) { alert('錯誤：' + e); setButtons(false); }
+}
+
+async function pollJob(jobId, kind) {
+    try {
+        const res = await fetch('/api/server/status/' + jobId);
+        const d = await res.json();
+        if (!d.ok) { setButtons(false); setDot('offline'); return; }
+        const j = d.job;
+        if (j.status === 'pending' || j.status === 'running') {
+            setTimeout(() => pollJob(jobId, kind), 1500);
+            return;
+        }
+        if (j.status === 'done') {
+            if (kind === 'start' || kind === 'restart') {
+                tlog("BotShop@BotShop~ $ bash -c 'cd /home/container && python3 bot.py'", 'info');
+                tlog('Python 3.13.15', '');
+                tlog('logged in as botshop (running)', 'ok');
+                tlog('BotShop@BotShop~ $ Server marked as running...', 'ok');
+                running = true;
+                setDot('running');
+                startUptime();
+                startStats();
+            } else {
+                tlog('[BotShop Daemon]: 伺服器已停止', 'ok');
+                tlog('BotShop@BotShop~ $ Server marked as offline...', 'ok');
+                running = false;
+                setDot('offline');
+                stopUptime();
+                stopStats();
+                document.getElementById('uptime').textContent = '0h 0m 0s';
+                document.getElementById('cpuVal').textContent = '0.00% / ∞';
+                document.getElementById('memVal').textContent = '0 MiB / 512 MiB';
+                document.getElementById('netIn').textContent = '0 B';
+                document.getElementById('netOut').textContent = '0 B';
+            }
+        } else {
+            tlog("python3: can't open file '/home/container/bot.py': [Errno 2] No such file or directory", 'error');
+            tlog('BotShop@BotShop~ $ Server marked as offline...', 'error');
+            tlog('[BotShop Daemon]: ---------- 偵測到伺服器處理程序處於當機狀態！ ----------', 'error');
+            tlog('[BotShop Daemon]: 結束代碼：2', 'error');
+            running = false;
+            setDot('offline');
+        }
+        setButtons(false);
+    } catch(e) { setButtons(false); }
+}
+
+function sendCommand(e) {
+    e.preventDefault();
+    const input = document.getElementById('cmdInput');
+    const cmd = input.value.trim();
+    if (!cmd) return;
+    input.value = '';
+    tlog('> ' + cmd);
+    const c = cmd.split(/\s+/)[0].toLowerCase();
+    if (c === 'help') tlog('指令: help, ls, clear, whoami, date', 'info');
+    else if (c === 'ls') { const f = getFiles(); if (!f.length) tlog('（空）', 'info'); else f.forEach(x => tlog('  ' + x.name, 'info')); }
+    else if (c === 'clear') term.innerHTML = '';
+    else if (c === 'whoami') tlog('botshop', 'ok');
+    else if (c === 'date') tlog(new Date().toString(), 'info');
+    else tlog('command not found: ' + c, 'error');
+}
+
+function getFiles() { try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); } catch(e) { return []; } }
+function saveFiles(a) { localStorage.setItem(STORAGE_KEY, JSON.stringify(a)); }
+function fmtSize(b) {
+    if (b < 1024) return b + ' B';
+    if (b < 1048576) return (b/1024).toFixed(1) + ' KB';
+    if (b < 1073741824) return (b/1048576).toFixed(1) + ' MB';
+    return (b/1073741824).toFixed(2) + ' GB';
+}
+function renderFiles() {
+    const list = document.getElementById('fileList');
+    const total = document.getElementById('totalSize');
+    const files = getFiles();
+    if (!files.length) {
+        list.innerHTML = '<div style="text-align:center;padding:60px;color:#666">還沒有任何檔案</div>';
+        total.textContent = '';
+        return;
+    }
+    list.innerHTML = files.map((f, i) => '<div class="file-row"><div class="name">' + (f.type === 'folder' ? '📁' : '📄') + ' ' + f.name + '</div><div class="size">' + (f.type === 'folder' ? '—' : fmtSize(f.size)) + '</div><div class="actions"><button onclick="deleteFile(' + i + ')">✕</button></div></div>').join('');
+    const sum = files.reduce((s, f) => s + (f.size || 0), 0);
+    total.textContent = '共 ' + files.length + ' 個項目 · ' + fmtSize(sum);
+}
+function newFolder() {
+    const name = prompt('資料夾名稱：');
+    if (!name || !name.trim()) return;
+    const files = getFiles();
+    files.push({ type: 'folder', name: name.trim(), size: 0 });
+    saveFiles(files); renderFiles();
+}
+function handleUpload(e) {
+    const f = e.target.files[0];
+    if (!f) return;
+    const files = getFiles();
+    files.push({ type: 'file', name: f.name, size: f.size });
+    saveFiles(files); renderFiles();
+    e.target.value = '';
+}
+function deleteFile(i) {
+    if (!confirm('刪除？')) return;
+    const files = getFiles();
+    files.splice(i, 1);
+    saveFiles(files); renderFiles();
+}
+
+initCharts();
+setDot('offline');
+tlog('Welcome to ' + SERVER_NAME + ' console', 'ok');
+setTimeout(() => tlog('BotShop@BotShop~ $ 等待指令...', 'info'), 500);
+</script>
+
+</body>
+</html>
