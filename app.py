@@ -117,6 +117,18 @@ def api_server_action(action):
         return jsonify(ok=False, msg="not logged in"), 401
     if action not in ("start", "stop", "restart", "kill"):
         return jsonify(ok=False, msg="invalid action"), 400
+    
+    # 去重：檢查有沒有同 action 的 pending/running job
+    check = requests.get(
+        f"{URL}/rest/v1/server_jobs",
+        headers=_h(),
+        params={"action": f"eq.{action}", "status": "in.(pending,running)", "order": "id.desc", "limit": 1},
+        timeout=10
+    )
+    if check.status_code == 200 and check.json():
+        existing = check.json()[0]
+        return jsonify(ok=True, job_id=existing["id"], cached=True)
+    
     r = requests.post(
         f"{URL}/rest/v1/server_jobs",
         headers=_h("return=representation"),
