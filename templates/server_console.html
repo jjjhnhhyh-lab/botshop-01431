@@ -434,7 +434,7 @@ async function pollJob(jobId, kind) {
         if (!d.ok) { setButtons(false); setDot('offline'); return; }
         const j = d.job;
         if (j.status === 'pending' || j.status === 'running') {
-            setTimeout(() => pollJob(jobId, kind), 1500);
+            setTimeout(() => pollJob(jobId, kind), 3000);
             return;
         }
         if (j.status === 'done') {
