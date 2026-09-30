@@ -30,24 +30,5 @@ document.addEventListener('keydown', e => {
 });
 </script>
 
-<script>
-// 前端保護
-document.addEventListener('contextmenu', e => e.preventDefault());
-document.addEventListener('keydown', e => {
-    if (e.key === 'F12' ||
-        (e.ctrlKey && e.shiftKey && ['I','J','C'].includes(e.key.toUpperCase())) ||
-        (e.ctrlKey && e.key.toUpperCase() === 'U') ||
-        (e.ctrlKey && e.key.toUpperCase() === 'S')) {
-        e.preventDefault();
-        return false;
-    }
-});
-document.addEventListener('selectstart', e => {
-    // 允許在 input 內選取
-    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
-    e.preventDefault();
-});
-document.addEventListener('dragstart', e => e.preventDefault());
-</script>
 </body>
 </html>
