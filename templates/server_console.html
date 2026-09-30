@@ -328,6 +328,54 @@ function shouldSkip(line) {
 let lastLine = '';
 
 
+
+async function checkBotStatus() {
+    try {
+        const res = await fetch('/api/console/recent?since_id=0');
+        const d = await res.json();
+        if (!d.ok) return;
+        
+        let latestStatus = 'unknown';
+        let latestBotName = '';
+        
+        // 從最新往回找
+        for (let i = d.lines.length - 1; i >= 0; i--) {
+            const line = stripAnsi(d.lines[i].line);
+            const m = line.match(/已登录[:：]\s*(.+)/);
+            if (m) {
+                latestBotName = m[1].trim();
+                latestStatus = 'running';
+                break;
+            }
+            if (line.includes('已停止') || line.includes('Server marked as offline')) {
+                latestStatus = 'stopped';
+                break;
+            }
+        }
+        
+        // 更新狀態燈
+        if (latestStatus === 'running') {
+            setDot('running');
+        } else if (latestStatus === 'stopped') {
+            setDot('offline');
+        }
+        
+        // 更新「等待指令...」文字
+        if (latestBotName) {
+            const children = Array.from(term.children);
+            for (let i = children.length - 1; i >= 0; i--) {
+                if (children[i].textContent.includes('等待指令')) {
+                    children[i].textContent = 'BotShop@BotShop~ $ 已啟動：' + latestBotName;
+                    children[i].className = 'tline ok';
+                    break;
+                }
+            }
+        }
+    } catch(e) {
+        console.error('checkBotStatus', e);
+    }
+}
+
 async function loadRecentLogs() {
     try {
         const res = await fetch('/api/console/recent?since_id=0');
@@ -666,7 +714,7 @@ if (term.children.length === 0) {
     tlog('Welcome to ' + SERVER_NAME + ' console', 'ok');
     setTimeout(() => tlog('BotShop@BotShop~ $ 等待指令...', 'info'), 500);
 }
-loadRecentLogs().then(() => startConsolePolling());
+loadRecentLogs().then(() => { checkBotStatus(); startConsolePolling(); });
 setDot('offline');
 setTimeout(() => tlog('BotShop@BotShop~ $ 等待指令...', 'info'), 500);
 </script>
