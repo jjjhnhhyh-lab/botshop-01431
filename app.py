@@ -151,5 +151,50 @@ def add_security_headers(response):
     response.headers['Permissions-Policy'] = 'geolocation=(), microphone=(), camera=()'
     return response
 
+
+
+@app.route("/api/files/upload", methods=["POST"])
+def api_files_upload():
+    if not current_user():
+        return jsonify(ok=False, msg="not logged in"), 401
+    data = request.get_json()
+    if not data:
+        return jsonify(ok=False, msg="no data"), 400
+    filename = data.get("filename")
+    content_b64 = data.get("content")
+    if not filename or not content_b64:
+        return jsonify(ok=False, msg="missing filename or content"), 400
+    import json as _json
+    payload = _json.dumps({"filename": filename, "content_b64": content_b64})
+    r = requests.post(
+        f"{URL}/rest/v1/server_jobs",
+        headers=_h("return=representation"),
+        json={"action": "write_file", "status": "pending", "payload": payload},
+        timeout=15
+    )
+    if r.status_code not in (200, 201):
+        return jsonify(ok=False, msg="failed to create job"), 500
+    return jsonify(ok=True, job_id=r.json()[0]["id"])
+
+@app.route("/api/server/command", methods=["POST"])
+def api_server_command():
+    if not current_user():
+        return jsonify(ok=False, msg="not logged in"), 401
+    data = request.get_json()
+    cmd = (data or {}).get("command", "").strip()
+    if not cmd:
+        return jsonify(ok=False, msg="empty command"), 400
+    import json as _json
+    payload = _json.dumps({"command": cmd})
+    r = requests.post(
+        f"{URL}/rest/v1/server_jobs",
+        headers=_h("return=representation"),
+        json={"action": "send_command", "status": "pending", "payload": payload},
+        timeout=15
+    )
+    if r.status_code not in (200, 201):
+        return jsonify(ok=False, msg="failed to create job"), 500
+    return jsonify(ok=True, job_id=r.json()[0]["id"])
+
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
