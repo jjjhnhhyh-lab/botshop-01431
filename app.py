@@ -213,5 +213,68 @@ def api_console_recent():
         return jsonify(ok=False), 500
     return jsonify(ok=True, lines=r.json())
 
+
+
+@app.route("/api/code/list")
+def api_code_list():
+    if not current_user():
+        return jsonify(ok=False), 401
+    r = requests.get(
+        f"{URL}/rest/v1/user_code",
+        headers=_h(),
+        params={"select": "filename,updated_at", "order": "filename"},
+        timeout=10
+    )
+    return jsonify(ok=True, files=r.json())
+
+@app.route("/api/code/read")
+def api_code_read():
+    if not current_user():
+        return jsonify(ok=False), 401
+    fname = request.args.get("file", "")
+    if not fname:
+        return jsonify(ok=False, msg="missing file"), 400
+    r = requests.get(
+        f"{URL}/rest/v1/user_code",
+        headers=_h(),
+        params={"filename": f"eq.{fname}", "limit": 1},
+        timeout=10
+    )
+    if r.status_code != 200 or not r.json():
+        return jsonify(ok=False, msg="not found"), 404
+    return jsonify(ok=True, content=r.json()[0]["content"])
+
+@app.route("/api/code/save", methods=["POST"])
+def api_code_save():
+    if not current_user():
+        return jsonify(ok=False), 401
+    data = request.get_json()
+    if not data:
+        return jsonify(ok=False), 400
+    fname = (data.get("filename") or "").strip()
+    content = data.get("content", "")
+    if not fname:
+        return jsonify(ok=False, msg="missing filename"), 400
+
+    # 1. Upsert to Supabase
+    r = requests.post(
+        f"{URL}/rest/v1/user_code",
+        headers=_h(),
+        params={"on_conflict": "filename"},
+        json={"filename": fname, "content": content},
+        timeout=10
+    )
+
+    # 2. Trigger write_file job (so bot pushes to Pterodactyl)
+    import json as _json, base64 as _b64
+    payload = _json.dumps({"filename": fname, "content_b64": _b64.b64encode(content.encode()).decode()})
+    r2 = requests.post(
+        f"{URL}/rest/v1/server_jobs",
+        headers=_h("return=representation"),
+        json={"action": "write_file", "status": "pending", "payload": payload},
+        timeout=10
+    )
+    return jsonify(ok=True, job_id=r2.json()[0]["id"])
+
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
