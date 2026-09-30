@@ -7,3 +7,5 @@ __pycache__/
 .pytest_cache/
 bot.py
 bot_pterodactyl.py
+test_bot.py
+scheduler.py
