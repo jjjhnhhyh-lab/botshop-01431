@@ -300,6 +300,26 @@ function shouldSkip(line) {
 
 let lastLine = '';
 
+
+async function loadRecentLogs() {
+    try {
+        const res = await fetch('/api/console/recent?since_id=0');
+        const d = await res.json();
+        if (!d.ok) return;
+        // 取最後 50 筆
+        const lines = d.lines.slice(-50);
+        for (const row of lines) {
+            let line = stripAnsi(row.line);
+            lastLogId = Math.max(lastLogId, row.id);
+            if (shouldSkip(line)) continue;
+            tlog(line);
+            lastLine = line;
+        }
+    } catch(e) {
+        console.error('loadRecentLogs', e);
+    }
+}
+
 function startConsolePolling() {
     if (consolePolling) return;
     consolePolling = setInterval(async () => {
@@ -609,7 +629,7 @@ function deleteFile(i) {
 }
 
 initCharts();
-startConsolePolling();
+loadRecentLogs().then(() => startConsolePolling());
 startConsolePolling();
 setDot('offline');
 tlog('Welcome to ' + SERVER_NAME + ' console', 'ok');
