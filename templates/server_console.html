@@ -637,6 +637,7 @@ function deleteFile(i) {
 }
 
 initCharts();
+restoreConsole();
 loadRecentLogs().then(() => startConsolePolling());
 startConsolePolling();
 setDot('offline');
