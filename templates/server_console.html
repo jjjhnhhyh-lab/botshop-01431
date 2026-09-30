@@ -320,6 +320,13 @@ function startConsolePolling() {
                 if (m) {
                     tlog('✅ 已啟動：' + m[1].trim(), 'ok');
                 }
+                // 偵測崩潰 / 錯誤
+                if (line.includes('Traceback (most recent call last)')) {
+                    tlog('⚠️ 機器人崩潰', 'error');
+                }
+                if (line.match(/Error:|Exception:|ImportError:|SyntaxError:/)) {
+                    tlog('❌ ' + line.trim(), 'error');
+                }
                 if (line.includes('已停止')) {
                     tlog('⏸️ 機器人已停止', 'warn');
                 }
