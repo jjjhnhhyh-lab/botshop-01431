@@ -282,6 +282,21 @@ function stripAnsi(str) {
     return str.replace(/\x1b\[[0-9;]*m/g, '');
 }
 
+function shouldSkip(line) {
+    const skip = [
+        '[Pterodactyl Daemon]:',
+        'Requirement already satisfied:',
+        'container~ sh -c',
+        'Defaulting to user installation',
+        'Pulling from ',
+        'Status: Image is up to date',
+        'Digest: sha256:',
+        'Requirement already satisfied',
+    ];
+    const t = line.trim();
+    return skip.some(p => t.startsWith(p));
+}
+
 let lastLine = '';
 
 function startConsolePolling() {
@@ -293,13 +308,11 @@ function startConsolePolling() {
             if (!d.ok) return;
             for (const row of d.lines) {
                 let line = stripAnsi(row.line);
-                if (line === lastLine) {
-                    lastLogId = Math.max(lastLogId, row.id);
-                    continue;
-                }
+                lastLogId = Math.max(lastLogId, row.id);
+                if (shouldSkip(line)) continue;
+                if (line === lastLine) continue;
                 tlog(line);
                 lastLine = line;
-                lastLogId = Math.max(lastLogId, row.id);
             }
         } catch(e) {}
     }, 2000);
