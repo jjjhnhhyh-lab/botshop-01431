@@ -193,6 +193,11 @@ function tlogSeq(lines, classes, delay, onDone) {
         i++;
         if (i >= lines.length) { clearInterval(t); if (onDone) onDone(); }
     }, delay);
+    return new Promise(resolve => {
+        const check = setInterval(() => {
+            if (i >= lines.length) { clearInterval(check); resolve(); }
+        }, 50);
+    });
 }
 function setButtons(d) { document.querySelectorAll('.pbtn').forEach(b => b.disabled = d); }
 function setDot(state) {
@@ -259,42 +264,44 @@ async function startServer() {
     setButtons(true);
     setDot('starting');
 
+    // 先逐行顯示通用啟動 log
+    await new Promise(resolve => {
+        tlogSeq([
+            '[BotShop Daemon]: ---------- 正在拉取 Docker 容器映像檔 ----------',
+            '[BotShop Daemon]: 已完成拉取 Docker 容器映像檔',
+            '[BotShop Daemon]: ---------- 環境變數 ----------',
+            '[BotShop Daemon]: 更新伺服器資源',
+            'BotShop@BotShop~ $ Server marked as starting...',
+            "BotShop@BotShop~ $ bash -c 'cd /home/container && python3 bot.py'"
+        ], ['', '', '', '', 'info', 'info'], 550, resolve);
+    });
+
     // 檢查有沒有機器人代碼
     const files = getFiles();
     const codeFiles = files.filter(f => f.type === 'file' && (f.name.endsWith('.py') || f.name.endsWith('.js')));
 
     if (codeFiles.length === 0) {
-        // 沒代碼 → 顯示錯誤，不呼叫 API
-        tlog('[BotShop Daemon]: ---------- 正在拉取 Docker 容器映像檔 ----------', '');
-        tlog('[BotShop Daemon]: 已完成拉取 Docker 容器映像檔', '');
-        tlog('[BotShop Daemon]: ---------- 環境變數 ----------', '');
-        tlog('[BotShop Daemon]: 更新伺服器資源', '');
-        tlog('BotShop@BotShop~ $ Server marked as starting...', 'info');
-        tlog("BotShop@BotShop~ $ bash -c 'cd /home/container && python3 bot.py'", 'info');
-        tlog("python3: can't open file '/home/container/bot.py': [Errno 2] No such file or directory", 'error');
-        tlog('BotShop@BotShop~ $ Server marked as offline...', 'error');
-        tlog('[BotShop Daemon]: ---------- 偵測到伺服器處理程序處於當機狀態！ ----------', 'error');
-        tlog('[BotShop Daemon]: 結束代碼：2', 'error');
-        tlog('[BotShop Daemon]: 已中止自動重新啟動，上一次啟動失敗', 'error');
-        tlog('', '');
-        tlog('❌ 錯誤：沒有找到機器人代碼（.py 或 .js）', 'error');
-        tlog('   請先到「放資料夾」上傳你的機器人程式', 'error');
-        setTimeout(() => { setButtons(false); setDot('offline'); }, 600);
+        // 沒代碼 → 繼續逐行顯示崩潰 log
+        await new Promise(resolve => {
+            tlogSeq([
+                "python3: can't open file '/home/container/bot.py': [Errno 2] No such file or directory",
+                'BotShop@BotShop~ $ Server marked as offline...',
+                '[BotShop Daemon]: ---------- 偵測到伺服器處理程序處於當機狀態！ ----------',
+                '[BotShop Daemon]: 結束代碼：2',
+                '[BotShop Daemon]: 記憶體不足：false',
+                '[BotShop Daemon]: 已中止自動重新啟動，上一次啟動失敗'
+            ], ['error', 'error', 'error', 'error', 'error', 'error'], 550, resolve);
+        });
+        setButtons(false);
+        setDot('offline');
         return;
     }
 
-    // 有代碼 → 呼叫 API 啟動
+    // 有代碼 → 呼叫 API
     try {
         const res = await fetch('/api/server/start', {method: 'POST'});
         const d = await res.json();
         if (!d.ok) { alert('失敗：' + (d.msg || '未知')); setButtons(false); setDot('offline'); return; }
-
-        tlog('[BotShop Daemon]: ---------- 正在拉取 Docker 容器映像檔 ----------', '');
-        tlog('[BotShop Daemon]: 已完成拉取 Docker 容器映像檔', '');
-        tlog('[BotShop Daemon]: ---------- 環境變數 ----------', '');
-        tlog('[BotShop Daemon]: 更新伺服器資源', '');
-        tlog('BotShop@BotShop~ $ Server marked as starting...', 'info');
-        tlog('BotShop@BotShop~ $ 偵測到 ' + codeFiles.length + ' 個機器人代碼檔案', 'info');
         pollJob(d.job_id, 'start');
     } catch(e) {
         alert('錯誤：' + e);
